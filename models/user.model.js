@@ -3,11 +3,7 @@ const { toJSON, paginate } = require('./plugins');
 
 const userSchema = mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
+    name: {
       type: String,
       required: false,
     },
@@ -20,6 +16,18 @@ const userSchema = mongoose.Schema(
       required: false,
       unique: true
     },
+    imageUrl: {
+      type: String,
+      required: false,
+    },
+    googleId: {
+      type: String,
+      required: false,
+    },
+    loginType: {
+      type: String,
+      required: false,
+    },
     password: {
       type: String,
       required: false,
@@ -28,7 +36,7 @@ const userSchema = mongoose.Schema(
     },
     country: {
       type: String,
-      required: true,
+      required: false,
     },
     city: {
       type: String,
@@ -41,7 +49,6 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       enum: ['STUDENT', 'TEACHER'],
-      default: 'TEACHER'
     },
     permissions: []
   },

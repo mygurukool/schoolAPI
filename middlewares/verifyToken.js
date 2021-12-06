@@ -13,12 +13,11 @@ async function auth(req, res, next) {
     const userId = verified._id;
 
     const users = await User.findOne({ _id: userId });
-
     if (!users) {
       return res.status(404).send({ message: "user not found" });
     }
+    req.loginType = users.loginType
     req.userId = verified._id;
-    req.language = users.selectedLanguage;
 
     next();
   } catch (error) {

@@ -4,64 +4,25 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const config = require('../config/config');
+const { axiosMiddleware } = require('../middlewares/axios');
+const { userApis, courseApis } = require('../utils/gapis');
+const { default: axios } = require('axios');
 
-const generateOtp = () => {
-    var digits = '0123456789';
-    let OTP = '';
-    for (let i = 0; i < 4; i++) {
-        OTP += digits[Math.floor(Math.random() * 10)];
-    }
-    return OTP;
-}
 
-const register = async (data) => {
-    const users = await User.findOne({ email: data.email });
-    if (users) {
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "User already exist" });
-    }
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(data.password, salt);
-
-    if (await User.create({ ...data, password: hashPassword, profileImage: `https://ui-avatars.com/api/?name=${data.name}&background=ffaa40&color=ffffff` })) {
-        const user = await User.findOne({ email: data.email });
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        return ({ status: httpStatus.OK, user: user, message: "User registered successfully", token: token });
-    }
-    return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to register user" });
-
-}
-
-const sendloginotp = async (data) => {
+const login = async (req) => {
     try {
-        const user = await User.findOne({ mobile: data.mobile, role: "user" });
-
-        const otp = generateOtp()
-        // const message = `OTP is ${otp}. Use it to verify your mobile number on EduParv app. Please do not share your OTP with anyone to avoid fraudulent activities.  Ref : ${data.signature}`
-        // console.log("signature", data.signature);
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(otp, salt);
-        // if (data.mobile) {
-        //     const sendotp = await sendSms(data.mobile, message)
-        //     if (!sendotp) {
-        //         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to send OTP" });
-        //     }
-        // }
-        if (user) {
-            await User.findByIdAndUpdate(user._id, { otp: otp, password: hashPassword })
-        } else {
-            await User.create({ mobile: data.mobile, otp: otp, password: hashPassword })
+        const data = req.body
+        if (data.loginType === 'google') {
+            //    await axiosMiddleware({ url: userApis.getDetails(data.googleId) }, req)
+            const findUser = await User.findOne({ email: data.email });
+            if (!findUser) {
+                const newuser = await User.create(data)
+                return ({ status: httpStatus.OK, user: newuser, message: "Login Successs" });
+            }
+            const updatedUser = await User.findByIdAndUpdate(findUser._id, data, { new: true })
+            return ({ status: httpStatus.OK, user: updatedUser, message: "Login Successs" });
         }
-        return ({ status: httpStatus.OK, message: `OTP sent successfully ${otp}`, });
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
-    }
-
-}
-
-const login = async (data) => {
-    try {
-        const user = await User.findOne({ email: data.email });
+        const user = await User.findOne({ email: body.email });
         if (!user) {
             return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Invalid email or password" });
         }
@@ -77,19 +38,8 @@ const login = async (data) => {
 
 const socialLogin = async (data) => {
     try {
-        const user = await User.findOne({ email: data.email });
-        if (user) {
-            const checkuser = await User.findById(user._id)
-            if (checkuser.userSocial && checkuser.userSocial.find((item) => { return item.socialId == data.socialId })) {
-            } else {
-                await User.findByIdAndUpdate(user._id, { $push: { userSocial: { socialId: data.socialId, socialType: data.socialType } } })
-            }
-            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-            return ({ status: httpStatus.OK, user: user });
-        }
-        await User.create(data)
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        return ({ status: httpStatus.OK, user: user, message: "User registered successfully", token: token });
+
+        return ({ status: httpStatus.OK, user: user, message: "User registered successfully", });
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to register user" });
@@ -98,14 +48,35 @@ const socialLogin = async (data) => {
 
 }
 
-const details = async (data) => {
-    const user = await User.findOne({ _id: data });
+const details = async (req) => {
+    try {
+        const token = req.header("Authorization");
+        const loginType = req.header("LoginType")
+        if (loginType === 'google') {
+            const user = await axios({
+                url: 'https://www.googleapis.com/userinfo/v2/me',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            return ({ status: httpStatus.OK, user: { ...user.data, imageUrl: user.data.picture }, message: "User details found successfully" });
 
-    if (!user) {
-        return ({ status: httpStatus.NOT_FOUND, message: "user does not exist" });
+        } else {
+            const user = await User.findOne({ _id: req.userId });
+
+            if (!user) {
+                return ({ status: httpStatus.NOT_FOUND, message: "user does not exist" });
+            }
+            return ({ status: httpStatus.OK, user: user, message: "User details found successfully" });
+
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to get details" });
+
     }
 
-    return ({ status: httpStatus.OK, user: user, message: "User details found successfully" });
+
 }
 
 const forgotPassword = async (data) => {
@@ -306,5 +277,5 @@ const forgotPassword = async (data) => {
 }
 
 module.exports = {
-    register, login, details, socialLogin, forgotPassword, sendloginotp
+    login, details, socialLogin, forgotPassword
 }
