@@ -17,10 +17,10 @@ const login = async (req) => {
             const findUser = await User.findOne({ email: data.email });
             if (!findUser) {
                 const newuser = await User.create(data)
-                return ({ status: httpStatus.OK, user: newuser, message: "Login Successs" });
+                return ({ status: httpStatus.OK, user: { ...newuser, id: newuser.googleId }, message: "Login Successs" });
             }
             const updatedUser = await User.findByIdAndUpdate(findUser._id, data, { new: true })
-            return ({ status: httpStatus.OK, user: updatedUser, message: "Login Successs" });
+            return ({ status: httpStatus.OK, user: { ...updatedUser, id: updatedUser.googleId }, message: "Login Successs" });
         }
         const user = await User.findOne({ email: body.email });
         if (!user) {

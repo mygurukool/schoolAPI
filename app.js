@@ -11,6 +11,7 @@ const path = require('path');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const httpStatus = require("http-status");
+const socket = require("./socket");
 
 if (config.env !== 'test') {
     app.use(morgan.successHandler);
@@ -38,6 +39,7 @@ app.use(mongoSanitize());
 // gzip compression
 app.use(compression());
 
+socket()
 
 app.use('/api', UserRoutes)
 
