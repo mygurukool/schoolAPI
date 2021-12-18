@@ -15,7 +15,7 @@ const userGroups = async (data) => {
             }
             else { return false }
         }))
-
+        console.log('filteredGroups', filteredGroups);
         return ({ status: httpStatus.OK, data: filteredGroups });
     } catch (error) {
         console.log(error);

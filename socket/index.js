@@ -83,8 +83,7 @@ const socket = () => {
         // send messages
 
         socket.on("SEND_MESSAGE", async (room) => {
-            // console.log('room', room);
-            const updateMessage = await GroupChat.findOneAndUpdate({ roomId: room.roomId }, { $push: { messages: room.message } })
+            await GroupChat.findOneAndUpdate({ roomId: room.roomId }, { $push: { messages: room.message } })
             io.to(room.roomId).emit("GET_MESSAGE", room)
         })
 
