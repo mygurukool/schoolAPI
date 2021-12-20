@@ -23,6 +23,37 @@ const socket = () => {
 
     let roomId = "";
 
+    const paginate = (array, page_size, page_number) => {
+        // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
+        return array.slice((page_number - 1) * page_size, page_number * page_size);
+    }
+
+    function descendingComparator(a, b, orderBy) {
+        if (b[orderBy] < a[orderBy]) {
+            return -1;
+        }
+        if (b[orderBy] > a[orderBy]) {
+            return 1;
+        }
+        return 0;
+    }
+
+    function getComparator(order, orderBy) {
+        return order === "desc"
+            ? (a, b) => descendingComparator(a, b, orderBy)
+            : (a, b) => -descendingComparator(a, b, orderBy);
+    }
+
+    function stableSort(array, comparator) {
+        const stabilizedThis = array.map((el, index) => [el, index]);
+        stabilizedThis.sort((a, b) => {
+            const order = comparator(a[0], b[0]);
+            if (order !== 0) return order;
+            return a[1] - b[1];
+        });
+        return stabilizedThis.map((el) => el[0]);
+    }
+
 
     io.on("connection", (socket) => {
         console.log('connection open');
@@ -63,20 +94,20 @@ const socket = () => {
 
         // Joining room for conversation
         socket.on("JOIN_ROOM", async (room) => {
+            // console.log('JOIN_ROOM', room);
+
             const checkRoom = await GroupChat.findOne({ roomId: room.roomId })
             if (!checkRoom) {
                 const createGroup = await GroupChat.create(room)
                 roomId = createGroup.roomId
-                // console.log('created', createGroup, roomId);
-                socket.join(roomId, (e) => {
-                    console.log('e', e);
-                });
-                io.emit("SEND_USER_GROUPS", [createGroup])
+                socket.join(roomId);
+                // io.emit("SEND_USER_GROUPS", [createGroup])
             }
             else {
+
                 roomId = checkRoom.roomId
                 socket.join(roomId);
-                io.emit("SEND_USER_GROUPS", [checkRoom])
+                // io.emit("SEND_USER_GROUPS", [checkRoom])
             }
         });
 
@@ -84,7 +115,52 @@ const socket = () => {
 
         socket.on("SEND_MESSAGE", async (room) => {
             await GroupChat.findOneAndUpdate({ roomId: room.roomId }, { $push: { messages: room.message } })
+            // console.log("GET_MESSAGE", room);
             io.to(room.roomId).emit("GET_MESSAGE", room)
+        })
+
+        socket.on("SEND_MESSAGES", async (room) => {
+            const group = await GroupChat.findOne({ roomId: room.roomId })
+            const groupMessages = group.messages
+            const page = room.page
+            const rowsPerPage = 20
+            // const paginatedMessages = paginate(messages.messages, 20, room.page + 1)
+            const paginatedMessages = stableSort(groupMessages, getComparator("desc", "timeStamp")).slice(
+                page * rowsPerPage,
+                page * rowsPerPage + rowsPerPage
+            )
+
+            const newMessage = await Promise.all(paginatedMessages.reverse().map(m => {
+                return { message: m }
+            }))
+            // console.log("GET_MESSAGES", newMessage);
+
+            io.to(room.roomId).emit("GET_MESSAGES", newMessage)
+        })
+
+        socket.on("ADD_USERS_TO_GROUP", async (data) => {
+            console.log('ADD_USERS_GROUP', data);
+            if (!data.groupId) {
+                const createGroup = await GroupChat.create(data)
+                roomId = createGroup.roomId
+                socket.join(roomId);
+                io.emit("SEND_USER_GROUPS", [createGroup])
+
+            } else {
+                const getGroup = await GroupChat.findById(data.groupId)
+                let currentGroupUser = getGroup.users
+                await Promise.all(data.users.forEach(async (u) => {
+                    const found = await getGroup.users.find(f => f.id === u.id)
+                    if (!found) {
+                        currentGroupUser.push(u)
+                    }
+                }))
+                console.log('currentGroupUser', currentGroupUser);
+                const updatedGroup = await GroupChat.findByIdAndUpdate(data.groupId, { users: currentGroupUser }, { new: true })
+                io.emit("SEND_USER_GROUPS", [updatedGroup])
+
+            }
+
         })
 
         // const emitError = (error) => {

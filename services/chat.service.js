@@ -3,7 +3,6 @@ const { GroupChat } = require('../models');
 
 const userGroups = async (data) => {
     try {
-        console.log(' data.assignmentId', data.assignmentId);
         const checkGroup = await GroupChat.find({ assignmentId: data.assignmentId })
         // console.log('checkGroup', checkGroup);
 
@@ -15,7 +14,7 @@ const userGroups = async (data) => {
             }
             else { return false }
         }))
-        console.log('filteredGroups', filteredGroups);
+        // console.log('filteredGroups', filteredGroups);
         return ({ status: httpStatus.OK, data: filteredGroups });
     } catch (error) {
         console.log(error);
