@@ -94,7 +94,7 @@ const socket = () => {
 
         // Joining room for conversation
         socket.on("JOIN_ROOM", async (room) => {
-            // console.log('JOIN_ROOM', room);
+            console.log('JOIN_ROOM', room);
 
             const checkRoom = await GroupChat.findOne({ roomId: room.roomId })
             if (!checkRoom) {
@@ -115,15 +115,17 @@ const socket = () => {
 
         socket.on("SEND_MESSAGE", async (room) => {
             await GroupChat.findOneAndUpdate({ roomId: room.roomId }, { $push: { messages: room.message } })
-            // console.log("GET_MESSAGE", room);
+            console.log("SEND_MESSAGE", room);
             io.to(room.roomId).emit("GET_MESSAGE", room)
         })
 
         socket.on("SEND_MESSAGES", async (room) => {
+            console.log("SEND_MESSAGES", room);
+
             const group = await GroupChat.findOne({ roomId: room.roomId })
             const groupMessages = group.messages
             const page = room.page
-            const rowsPerPage = 20
+            const rowsPerPage = 5
             // const paginatedMessages = paginate(messages.messages, 20, room.page + 1)
             const paginatedMessages = stableSort(groupMessages, getComparator("desc", "timeStamp")).slice(
                 page * rowsPerPage,
@@ -149,13 +151,13 @@ const socket = () => {
             } else {
                 const getGroup = await GroupChat.findById(data.groupId)
                 let currentGroupUser = getGroup.users
-                await Promise.all(data.users.forEach(async (u) => {
+                await Promise.all(data.users.map(async (u) => {
                     const found = await getGroup.users.find(f => f.id === u.id)
                     if (!found) {
                         currentGroupUser.push(u)
                     }
                 }))
-                console.log('currentGroupUser', currentGroupUser);
+                // console.log('currentGroupUser', currentGroupUser);
                 const updatedGroup = await GroupChat.findByIdAndUpdate(data.groupId, { users: currentGroupUser }, { new: true })
                 io.emit("SEND_USER_GROUPS", [updatedGroup])
 
@@ -163,10 +165,19 @@ const socket = () => {
 
         })
 
-        // const emitError = (error) => {
-        //     io.to(groupId).emit("SOCKET_ERROR", error)
-        // }
 
+
+        // whiteboard
+
+        socket.on("JOIN_WHITEBOARD_ROOM", async (data) => {
+            console.log('JOIN_WHITEBOARD_ROOM', data);
+            socket.join(data)
+        })
+
+        socket.on("CREATE_WHITEBOARD", async (data) => {
+            console.log('data', data);
+            io.to(data.courseId).emit("SET_WHITEBOARD_URL", data.whiteBoardUrl)
+        })
 
         socket.on("disconnect", () => {
             activeUsers.delete(socket.userId);
