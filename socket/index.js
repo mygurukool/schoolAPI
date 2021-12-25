@@ -175,7 +175,6 @@ const socket = () => {
         })
 
         socket.on("CREATE_WHITEBOARD", async (data) => {
-            console.log('data', data);
             io.to(data.courseId).emit("SET_WHITEBOARD_URL", data.whiteBoardUrl)
         })
 

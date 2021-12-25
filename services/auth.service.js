@@ -20,7 +20,7 @@ const login = async (req) => {
                 return ({ status: httpStatus.OK, user: { ...newuser, id: newuser.googleId }, message: "Login Successs" });
             }
             const updatedUser = await User.findByIdAndUpdate(findUser._id, data, { new: true })
-            return ({ status: httpStatus.OK, user: { ...updatedUser, id: updatedUser.googleId }, message: "Login Successs" });
+            return ({ status: httpStatus.OK, user: { ...updatedUser._doc, id: updatedUser.googleId }, message: "Login Successs" });
         }
         const user = await User.findOne({ email: body.email });
         if (!user) {
