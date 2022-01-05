@@ -1,17 +1,74 @@
-const { default: axios } = require('axios');
 const httpStatus = require('http-status');
 const { axiosMiddleware } = require('../middlewares/axios');
+const { Course } = require('../models');
 const { courseApis } = require('../utils/gapis');
 
 
 const all = async (req) => {
     try {
-        const courses = await axiosMiddleware({ url: courseApis.getCourses() }, req)
-        let groups = []
-        await Promise.all(courses.courses.map(c => {
-            groups.push(c.section)
-        }))
-        return ({ status: httpStatus.OK, data: { courses: courses.courses, groups: groups } });
+        // console.log('req', req);
+        if (req.loginType === 'mygurukool') {
+            const courses = await Course.find(req.query)
+            return ({ status: httpStatus.OK, data: courses });
+        } else if (req.loginType === 'google') {
+            const courses = await axiosMiddleware({ url: courseApis.getCourses() }, req)
+            const newCourse = await Promise.all(courses.courses.map(c => {
+                return { ...c, courseName: c.name }
+            }))
+
+            return ({ status: httpStatus.OK, data: newCourse });
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+    }
+}
+
+
+const create = async (req) => {
+    try {
+        const data = req.body
+        if (req.loginType === 'mygurukool') {
+            const checkIfExist = await Course.findOne(data)
+            if (checkIfExist) {
+                return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Group name already exist" });
+            }
+            await Course.create(data)
+            return ({ status: httpStatus.OK, message: "Course created successfully" });
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+    }
+}
+
+const update = async (req) => {
+    try {
+        const data = req.body
+        if (req.loginType === 'mygurukool') {
+            const checkIfExist = await Course.findOne({ courseName: data.courseName, organizationId: data.organizationId })
+            if (checkIfExist && checkIfExist.courseName != data.courseName) {
+                const check = Course.find({ courseName: data.courseName, _id: data.id || data.id })
+                if (check.length > 0) {
+                    return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Course name already exist!" })
+                }
+            }
+            await Course.findByIdAndUpdate(data.id || data._id, data)
+            return ({ status: httpStatus.OK, message: "Course updated successfully" });
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+    }
+}
+
+const remove = async (req) => {
+    try {
+        const data = req.body
+        if (req.loginType === 'mygurukool') {
+            await Course.findByIdAndDelete(data.id || data._id)
+            return ({ status: httpStatus.OK, message: "Course deleted successfully" });
+        }
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
@@ -40,5 +97,5 @@ const assignmentList = async (req) => {
 
 
 module.exports = {
-    all, assignmentList
+    all, create, update, remove, assignmentList
 }

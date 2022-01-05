@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const create = async (data) => {
     try {
         await User.findOneAndDelete({ email: data.email });
-
         const users = await User.findOne({ email: data.email });
         if (users) {
             return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "User already exist" });
@@ -15,7 +14,8 @@ const create = async (data) => {
         const hashPassword = await bcrypt.hash(data.password, salt);
         const user = await User.create({ ...data, password: hashPassword })
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        await Organization.create({ ...data, userId: user._id, organizationCountry: data.country })
+        const organization = await Organization.create({ ...data, organizationEmail: data.email, userId: user._id, organizationCountry: data.country })
+        await User.findByIdAndUpdate(user._id, { organizationId: organization.id || organization._id })
         return ({ status: httpStatus.OK, token: token, user: user, message: "Organization created successfully" });
     } catch (error) {
         console.log(error);

@@ -178,6 +178,18 @@ const socket = () => {
             io.to(data.courseId).emit("SET_WHITEBOARD_URL", data.whiteBoardUrl)
         })
 
+        // conference
+
+        socket.on("JOIN_CONFERENCE_ROOM", async (data) => {
+            console.log('JOIN_CONFERENCE_ROOM', data);
+            socket.join(data)
+        })
+
+        socket.on("INITIALIZE_CONFERENCE", async (data) => {
+            // console.log('INITIALIZE_CONFERENCE', data);
+            socket.broadcast.to(data.courseId).emit("SET_CONFERENCE", data)
+        })
+
         socket.on("disconnect", () => {
             activeUsers.delete(socket.userId);
             console.log('disconnected');

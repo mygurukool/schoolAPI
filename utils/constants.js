@@ -6,4 +6,8 @@ const REACT_APP_GOOGLE_OAUTH_SCOPES =
 
 const REACT_APP_GOOGLE_OAUTH_TUTOR_SCOPES = "https://www.googleapis.com/auth/classroom.coursework.students https://www.googleapis.com/auth/classroom.courses https://www.googleapis.com/auth/classroom.coursework.students https://www.googleapis.com/auth/classroom.rosters";
 
-module.exports = { GOOGLE_API, MS_API, REACT_APP_GOOGLE_OAUTH_SCOPES, REACT_APP_GOOGLE_OAUTH_TUTOR_SCOPES }
+const DATETIMEFORMAT = 'DD/MM/YYYY HH:mm';
+
+
+module.exports = { GOOGLE_API, MS_API, REACT_APP_GOOGLE_OAUTH_SCOPES, REACT_APP_GOOGLE_OAUTH_TUTOR_SCOPES, DATETIMEFORMAT }
+

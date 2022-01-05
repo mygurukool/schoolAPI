@@ -52,6 +52,7 @@ module.exports = {
                 pass: envVars.SMTP_PASSWORD,
             },
         },
+        sendgrid_api_key: envVars.SENDGRID_API_KEY,
         from: envVars.EMAIL_FROM,
     },
     razorpay: {

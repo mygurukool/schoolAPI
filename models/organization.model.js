@@ -10,6 +10,10 @@ const organizationSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    organizationEmail: {
+        type: String,
+        required: true
+    },
     organizationAddress: {
         type: String,
         required: true

@@ -22,15 +22,15 @@ const socialLogin = catchAsync(async (req, res) => {
     return res.status(result.status).send(result);
 });
 
-const forgotPassword = catchAsync(async (req, res) => {
-    const result = await authService.forgotPassword(req.body);
-    return res.status(result.status).send(result);
-});
+// const forgotPassword = catchAsync(async (req, res) => {
+//     const result = await authService.forgotPassword(req.body);
+//     return res.status(result.status).send(result);
+// });
 
 module.exports = {
     login,
     details,
     socialLogin,
-    forgotPassword,
+    // forgotPassword,
     sendloginotp
 };

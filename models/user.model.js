@@ -3,6 +3,14 @@ const { toJSON, paginate } = require('./plugins');
 
 const userSchema = mongoose.Schema(
   {
+    organizationId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: false
+    },
+    groupId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: false
+    },
     name: {
       type: String,
       required: false,
@@ -48,9 +56,12 @@ const userSchema = mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['STUDENT', 'TEACHER'],
+      required: false,
     },
-    permissions: []
+    permissions: {
+      type: Array,
+      required: false,
+    }
   },
   {
     timestamps: true,
