@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const config = require('../config/config');
 const Invitation = require('../models/invitation.model');
 const sgMail = require('@sendgrid/mail');
-const { User } = require('../models');
+const { User, Group } = require('../models');
 const bcrypt = require("bcryptjs");
 
 const getInvitation = async (id) => {
@@ -17,7 +17,6 @@ const getInvitation = async (id) => {
 
 const sendInvitation = async (data) => {
     try {
-        console.log('data', data);
         const createInvitation = await Invitation.create(data)
         const filteredPeoples = await Promise.all(data.peoples.filter(async f => {
             const foundUser = await User.findOne({ email: f })
@@ -245,8 +244,14 @@ const acceptInvitation = async (data) => {
 
         const hashPassword = await bcrypt.hash(data.password, salt);
         const checkUser = await User.findOne({ email: data.email })
+
         if (!checkUser) {
-            await User.create({ organizationId: invitation.organizationId, groupId: invitation.groupId, name: data.name, email: data.email, loginType: 'mygurukool', password: hashPassword, role: data.role, permissions: data.permissions })
+            const createdUser = await User.create({ organizationId: invitation.organizationId, groupId: invitation.groupId, name: data.name, email: data.email, loginType: 'mygurukool', password: hashPassword, role: data.role, permissions: data.permissions })
+            if (data.role === 'TEACHER') {
+                await Group.findByIdAndUpdate(invitation.groupId, { $push: { teachers: createdUser, users: createdUser.id || createdUser._id, } })
+            } else {
+                await Group.findByIdAndUpdate(invitation.groupId, { $push: { students: createdUser, users: createdUser.id || createdUser._id, } })
+            }
         }
         return ({ status: httpStatus.OK, message: 'Invitation accepted' });
     } catch (error) {

@@ -7,10 +7,6 @@ const userSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       required: false
     },
-    groupId: {
-      type: mongoose.SchemaTypes.ObjectId,
-      required: false
-    },
     name: {
       type: String,
       required: false,

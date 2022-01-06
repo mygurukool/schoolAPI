@@ -6,7 +6,7 @@ const { courseApis } = require('../utils/gapis');
 const all = async (req) => {
     try {
         if (req.loginType === 'mygurukool') {
-            const groups = await Group.find({ organizationId: req.organizationId })
+            const groups = await Group.find({ users: { $in: [req.userId] } })
             return ({ status: httpStatus.OK, data: groups });
         }
         else if (req.loginType === 'google') {
@@ -25,13 +25,14 @@ const all = async (req) => {
 
 }
 
-const create = async (data) => {
+const create = async (req) => {
     try {
+        const data = req.body
         const checkIfExist = await Group.findOne(data)
         if (checkIfExist) {
             return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Group name already exist" });
         }
-        await Group.create(data)
+        await Group.create({ ...data, users: [req.userId] })
         return ({ status: httpStatus.OK, message: "Group created successfully" });
     } catch (error) {
         console.log(error);

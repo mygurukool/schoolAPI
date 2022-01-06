@@ -10,6 +10,18 @@ const groupSchema = mongoose.Schema({
         type: mongoose.SchemaTypes.ObjectId,
         required: true
     },
+    students: {
+        type: Array,
+        required: false,
+    },
+    teachers: {
+        type: Array,
+        required: false,
+    },
+    users: {
+        type: Array,
+        required: false,
+    },
     groupName: {
         type: String,
         required: true

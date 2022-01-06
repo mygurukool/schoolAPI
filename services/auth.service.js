@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User, } = require('../models')
+const { User, Organization, } = require('../models')
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 // const nodemailer = require("nodemailer");
@@ -28,7 +28,9 @@ const login = async (req) => {
             }
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-            return ({ status: httpStatus.OK, user: user, loginType: 'mygurukool', token: token, message: "Login Successs" });
+            const organization = await Organization.findById(user.organizationId)
+
+            return ({ status: httpStatus.OK, user: user, organization: organization, loginType: 'mygurukool', token: token, message: "Login Successs" });
         }
     } catch (error) {
         console.log(error);
@@ -69,11 +71,12 @@ const details = async (req) => {
             }
             const userId = verified._id;
             const user = await User.findOne({ _id: userId });
+            const organization = await Organization.findById(user.organizationId)
 
             if (!user) {
                 return ({ status: httpStatus.NOT_FOUND, message: "user does not exist" });
             }
-            return ({ status: httpStatus.OK, user: user, message: "User details found successfully" });
+            return ({ status: httpStatus.OK, user: user, organization: organization, message: "User details found successfully" });
 
         }
     } catch (error) {

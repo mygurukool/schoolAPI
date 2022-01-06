@@ -7,7 +7,7 @@ const all = catchAsync(async (req, res) => {
 });
 
 const create = catchAsync(async (req, res) => {
-    const result = await groupService.create(req.body);
+    const result = await groupService.create(req);
     return res.status(result.status).send(result);
 });
 

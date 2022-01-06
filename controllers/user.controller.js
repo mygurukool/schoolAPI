@@ -12,7 +12,7 @@ const getStudents = catchAsync(async (req, res) => {
 });
 
 const remove = catchAsync(async (req, res) => {
-    const result = await userService.remove(req.query.id);
+    const result = await userService.remove(req.query);
     return res.status(result.status).send(result);
 });
 

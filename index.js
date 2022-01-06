@@ -11,6 +11,9 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     });
 });
 mongoose.set('useFindAndModify', false);
+mongoose.set('toJSON', {
+    virtuals: true
+});
 
 // const exitHandler = () => {
 //     if (server) {
