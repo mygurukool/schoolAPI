@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "pm2 start ecosystem.config.json --no-daemon"
+    "start": "nodemon index.js",
+    "dev": "pm2 start ecosystem.config.json --no-daemon"
   },
   "author": "",
   "license": "ISC",

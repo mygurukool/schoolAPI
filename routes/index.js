@@ -9,6 +9,9 @@ const assignment = require('./assignment.route')
 const invitation = require('./invitation.route')
 const user = require('./user.route')
 
+router.get('/test', (req, res) => {
+    res.send('Hello')
+})
 router.use('/auth', auth)
 router.use('/organization', organization)
 router.use('/course', courses)
