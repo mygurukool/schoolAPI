@@ -17,6 +17,9 @@ const getInvitation = async (id) => {
 
 const sendInvitation = async (data) => {
     try {
+        if (!config.email.sendgrid_api_key) {
+            return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No Api key found" });
+        }
         const createInvitation = await Invitation.create(data)
         const filteredPeoples = await Promise.all(data.peoples.filter(async f => {
             const foundUser = await User.findOne({ email: f })
@@ -218,7 +221,7 @@ const sendInvitation = async (data) => {
         try {
             await sgMail.sendMultiple(mailDetails)
         } catch (error) {
-            // return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
+            return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
 
         }
 
