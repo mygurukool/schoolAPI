@@ -6,8 +6,14 @@
       "instances": 1,
       "autorestart": true,
       "watch": true,
-      "ignore_watch": ["public"],
-      "time": true
+      "ignore_watch": ["public", "uploaded"],
+      "watch_options": {
+        "followSymlinks": false
+      },
+      "time": true,
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
   ]
 }

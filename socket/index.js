@@ -1,18 +1,16 @@
 const socketIO = require('socket.io')
-const http = require('http')
 const app = require('../app')
 const logger = require("../config/logger");
 const config = require("../config/config");
-const { uuid } = require('uuidv4');
 const { GroupChat } = require('../models');
 
-const socket = () => {
+const socket = (server) => {
 
-    const socketServer = http.createServer(app)
-    socketServer.listen(config.socketport, () => {
-        logger.info(`Listening to socket server at ${config.socketport}`);
-    })
-    const io = socketIO(socketServer, {
+    // const socketServer = http.createServer(app)
+    // socketServer.listen(config.socketport, () => {
+    //     logger.info(`Listening to socket server at ${config.socketport}`);
+    // })
+    const io = socketIO(server, {
         cors: {
             origin: "*",
             methods: ['GET', 'POST']
@@ -198,5 +196,7 @@ const socket = () => {
         });
     });
     return io
+
 }
+
 module.exports = socket

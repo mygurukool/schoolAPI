@@ -30,7 +30,8 @@ module.exports = {
     port: envVars.PORT,
     socketport: envVars.SOCKET_PORT,
     mongoose: {
-        url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
+        // url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
+        url: envVars.NODE_ENV === "production" ? envVars.MONGODB_ATLAS_URL : envVars.MONGODB_URL,
         options: {
             useCreateIndex: true,
             useNewUrlParser: true,

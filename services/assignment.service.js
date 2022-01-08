@@ -38,10 +38,12 @@ const all = async (req) => {
 
 const create = async (req) => {
     try {
-        if (req.loginType === 'mygurukool') {
-            await Assignment.create(req.body)
-            return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
-        }
+        // console.log('req', req);
+        // if (req.loginType === 'mygurukool') {
+        //     await Assignment.create(req.body)
+        //     return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
+        // }
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Assignment created successfully' });
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });

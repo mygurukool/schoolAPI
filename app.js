@@ -12,6 +12,8 @@ const config = require('./config/config');
 const morgan = require('./config/morgan');
 const httpStatus = require("http-status");
 const socket = require("./socket");
+const logger = require("./config/logger");
+
 
 if (config.env !== 'test') {
     app.use(morgan.successHandler);
@@ -39,17 +41,19 @@ app.use(mongoSanitize());
 // gzip compression
 app.use(compression());
 
-socket()
 
 app.use('/api', UserRoutes)
 
 app.locals.moment = require('moment');
 global.ObjectId = require('mongodb').ObjectID;
 
+
 app.use(function (req, res, next) {
     next(
         res.status(httpStatus.NOT_FOUND).send({ message: "Internal Server Error" })
     );
 });
+
+
 
 module.exports = app;

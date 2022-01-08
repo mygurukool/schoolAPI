@@ -2,13 +2,22 @@ const mongoose = require('mongoose');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const socket = require('./socket');
+const Grid = require('gridfs-stream')
 
 let server;
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+mongoose.connect(config.mongoose.url, config.mongoose.options).then((db) => {
     logger.info('Connected to MongoDB');
     server = app.listen(config.port, () => {
-        logger.info(`Listening to port ${config.port}`);
+        logger.info(`Listening to port ${config.port} and running on ${config.env}`);
     });
+    socket(server)
+    // global.gfs = Grid(db, mongoose.mongo, {
+    //     bucketName: "photos"
+    // })
+    // global.gfs = new mongoose.mongo.GridFSBucket(db, {
+    //     bucketName: "photos"
+    // });
 });
 mongoose.set('useFindAndModify', false);
 mongoose.set('toJSON', {
