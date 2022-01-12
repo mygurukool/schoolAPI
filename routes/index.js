@@ -28,11 +28,11 @@ connection.once('open', () => {
 router.get('/test', (req, res) => {
     res.send('Hello')
 })
-router.get('/:id', (req, res) => {
+router.get('/image/:id', (req, res) => {
     const id = req.params.id
     gfs.files.find({ filename: id }).toArray(function (err, files) {
         const file = files[0]
-        console.log(file);
+        // console.log(file);
 
         res.contentType(file.contentType)
         var readStream = gfs.createReadStream({ _id: ObjectId(file._id) })
@@ -44,6 +44,7 @@ router.get('/:id', (req, res) => {
         })
     })
 })
+
 router.use('/auth', auth)
 router.use('/organization', organization)
 router.use('/course', courses)

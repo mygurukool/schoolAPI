@@ -14,7 +14,6 @@ const httpStatus = require("http-status");
 const socket = require("./socket");
 const logger = require("./config/logger");
 
-
 if (config.env !== 'test') {
     app.use(morgan.successHandler);
     app.use(morgan.errorHandler);

@@ -1,11 +1,6 @@
 const httpStatus = require('http-status');
 const { User, Organization, } = require('../models')
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-// const nodemailer = require("nodemailer");
-const config = require('../config/config');
-const { axiosMiddleware } = require('../middlewares/axios');
-const { userApis, courseApis } = require('../utils/gapis');
 const { default: axios } = require('axios');
 
 

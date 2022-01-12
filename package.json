@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production nodemon index.js",
+    "start": "cross-env NODE_ENV=production pm2 start ecosystem.config.json --no-daemon",
     "dev": "cross-env NODE_ENV=development nodemon index.js"
   },
   "author": "",
@@ -31,6 +31,7 @@
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
     "logger": "0.0.1",
+    "metascraper": "^5.25.7",
     "moment": "^2.29.1",
     "mongodb": "^4.1.4",
     "mongoose": "^5.11.8",
