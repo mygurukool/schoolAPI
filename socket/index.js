@@ -173,6 +173,7 @@ const socket = (server) => {
         })
 
         socket.on("CREATE_WHITEBOARD", async (data) => {
+            console.log("CREATE_WHITEBOARD", data);
             io.to(data.courseId).emit("SET_WHITEBOARD_URL", data.whiteBoardUrl)
         })
 

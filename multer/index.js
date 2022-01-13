@@ -10,9 +10,12 @@ const storage = new GridFsStorage({
     url,
     file: (req, file) => {
         return {
-            bucketName: 'photos'
+            bucketName: 'files'
         };
-    }
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); //Appending extension
+    },
 });
 
 // Set multer storage engine to the newly created object
@@ -33,9 +36,9 @@ module.exports = upload;
 //         }
 //         return cb(null, dir)
 //     },
-//     filename: function (req, file, cb) {
-//         cb(null, Date.now() + path.extname(file.originalname)); //Appending extension
-//     },
+    // filename: function (req, file, cb) {
+    //     cb(null, Date.now() + path.extname(file.originalname)); //Appending extension
+    // },
 // });
 
 // var upload = multer({

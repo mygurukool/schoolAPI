@@ -1,11 +1,23 @@
 const httpStatus = require('http-status');
 const { ObjectId } = require('mongodb');
+const { axiosMiddleware } = require('../middlewares/axios');
 const { Group, User } = require('../models');
+const { courseApis } = require('../utils/gapis');
 
-const getTeachers = async (data) => {
+const getTeachers = async (req) => {
     try {
-        const teachers = await Group.findById(data.groupId)
-        return ({ status: httpStatus.OK, data: teachers.teachers });
+        console.log('req.loginType ', req.loginType);
+        if (req.loginType === 'mygurukool') {
+            const teachers = await Group.findById(req.query.groupId)
+            return ({ status: httpStatus.OK, data: teachers.teachers });
+        } else if (req.loginType === 'google') {
+            const courseTeachers = await axiosMiddleware({ url: courseApis.getCourseTeachers(req.query.courseId) }, req)
+            const teachers = await Promise.all(courseTeachers.teachers.map(t => {
+                return { courseId: t.courseId, teacherId: t.userId, name: t.profile.name.fullName, permissions: t.profile.permissions }
+            }))
+            return ({ status: httpStatus.OK, data: teachers });
+        }
+
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
@@ -13,10 +25,18 @@ const getTeachers = async (data) => {
     }
 }
 
-const getStudents = async (data) => {
+const getStudents = async (req) => {
     try {
-        const students = await Group.findById(data.groupId)
-        return ({ status: httpStatus.OK, data: students.students });
+        if (req.loginType === 'mygurukool') {
+            const students = await Group.findById(req.query.groupId)
+            return ({ status: httpStatus.OK, data: students.students });
+        } else if (req.loginType === 'google') {
+            const courseStudents = await axiosMiddleware({ url: courseApis.getCourseStudents(req.query.courseId) }, req)
+            const students = await Promise.all(courseStudents.students.map(t => {
+                return { courseId: t.courseId, studentId: t.userId, name: t.profile.name.fullName, permissions: t.profile.permissions }
+            }))
+            return ({ status: httpStatus.OK, data: students });
+        }
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });

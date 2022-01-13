@@ -6,7 +6,6 @@ const { courseApis } = require('../utils/gapis');
 
 const all = async (req) => {
     try {
-        // console.log('req', req);
         if (req.loginType === 'mygurukool') {
             const courses = await Course.find(req.query)
             return ({ status: httpStatus.OK, data: courses });

@@ -12,12 +12,12 @@ const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose');
 const config = require('../config/config');
 const Grid = require('gridfs-stream');
-
+const ogs = require('open-graph-scraper');
 const connection = mongoose.createConnection(config.mongoose.url);
 
 // Init gfs
 let gfs;
-const image_bucket_name = "photos"
+const image_bucket_name = "files"
 
 connection.once('open', () => {
     // Init stream
@@ -25,9 +25,6 @@ connection.once('open', () => {
     gfs.collection(image_bucket_name);
 })
 
-router.get('/test', (req, res) => {
-    res.send('Hello')
-})
 router.get('/image/:id', (req, res) => {
     const id = req.params.id
     gfs.files.find({ filename: id }).toArray(function (err, files) {
@@ -43,6 +40,13 @@ router.get('/image/:id', (req, res) => {
             res.end()
         })
     })
+})
+
+router.post('/metadata', async (req, res) => {
+    const options = { url: req.body.url };
+    await ogs(options, (error, results, response) => {
+        res.send(results)
+    });
 })
 
 router.use('/auth', auth)

@@ -16,19 +16,12 @@ const all = async (req) => {
         } else if (req.loginType === 'google') {
             const { courseId } = req.query
             const assignments = await axiosMiddleware({ url: courseApis.getAssignments(courseId) }, req)
-            const courseTeachers = await axiosMiddleware({ url: courseApis.getCourseTeachers(courseId) }, req)
-            const courseStudents = await axiosMiddleware({ url: courseApis.getCourseStudents(courseId) }, req)
-            const teachers = await Promise.all(courseTeachers.teachers.map(t => {
-                return { courseId: t.courseId, teacherId: t.userId, name: t.profile.name.fullName, permissions: t.profile.permissions }
-            }))
-            const students = await Promise.all(courseStudents.students.map(t => {
-                return { courseId: t.courseId, studentId: t.userId, name: t.profile.name.fullName, permissions: t.profile.permissions }
-            }))
+
             const newAssignment = await Promise.all(assignments.courseWork.map(a => {
-                return { ...a, assignmentTitle: a.title, instructions: a.description, dueDate: `${a.dueDate?.day}/${a.dueDate?.month}/${a.dueDate?.year} ${a.dueTime.hours}:${a.dueTime.minutes}` }
+                return { ...a, assignmentTitle: a.title, instructions: a.description, dueDate: a.dueDate ? `${a.dueDate?.day}/${a.dueDate?.month}/${a.dueDate?.year} ${a.dueTime.hours}:${a.dueTime.minutes}  ` : '' }
             }))
             // console.log('courseTeachers', students);
-            return ({ status: httpStatus.OK, data: { assignments: newAssignment, teachers: teachers, students: students } });
+            return ({ status: httpStatus.OK, data: { assignments: newAssignment, } });
         }
     } catch (error) {
         console.log(error);
@@ -38,12 +31,11 @@ const all = async (req) => {
 
 const create = async (req) => {
     try {
-        // console.log('req', req);
-        // if (req.loginType === 'mygurukool') {
-        //     await Assignment.create(req.body)
-        //     return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
-        // }
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Assignment created successfully' });
+        const audioVideo = JSON.parse(req.body.audioVideo)
+        if (req.loginType === 'mygurukool') {
+            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: req.files, audioVideo: audioVideo })
+            return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
+        }
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });

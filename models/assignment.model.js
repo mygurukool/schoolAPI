@@ -17,6 +17,11 @@ const assignmentSchema = mongoose.Schema({
         ref: 'organizations',
         required: true
     },
+    userId: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'users',
+        required: true
+    },
     assignmentTitle: {
         type: String,
         required: true
@@ -33,6 +38,14 @@ const assignmentSchema = mongoose.Schema({
         type: String,
         required: false
     },
+    uploadExercises: {
+        type: Array,
+        required: false
+    },
+    audioVideo: {
+        type: Array,
+        required: false
+    }
 });
 
 

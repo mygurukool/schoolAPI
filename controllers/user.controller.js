@@ -2,12 +2,12 @@ const catchAsync = require('../utils/catchAsync');
 const { userService } = require('../services');
 
 const getTeachers = catchAsync(async (req, res) => {
-    const result = await userService.getTeachers(req.query);
+    const result = await userService.getTeachers(req);
     return res.status(result.status).send(result);
 });
 
 const getStudents = catchAsync(async (req, res) => {
-    const result = await userService.getStudents(req.query);
+    const result = await userService.getStudents(req);
     return res.status(result.status).send(result);
 });
 
