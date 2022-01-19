@@ -5,3 +5,5 @@ module.exports.Group = require('./group.model');
 module.exports.Course = require('./course.model');
 module.exports.Assignment = require('./assignment.model');
 module.exports.Invitation = require('./invitation.model');
+module.exports.UploadFile = require('./uploadfile.model');
+module.exports.StudentPoint = require('./studentpoint.model');

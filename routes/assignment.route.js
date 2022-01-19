@@ -6,7 +6,9 @@ const upload = require('../multer');
 
 router.get('/', verify, assignmentController.all)
 router.post('/create', verify, upload.any(), assignmentController.create)
-router.put('/edit', verify, assignmentController.update)
+router.put('/edit', verify, upload.any(), assignmentController.update)
 router.delete('/delete', verify, assignmentController.remove)
+router.get('/submissions', verify, assignmentController.submissions)
+router.post('/submissions/point', verify, assignmentController.submissionsPoint)
 
 module.exports = router;

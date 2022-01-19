@@ -17,6 +17,17 @@ const remove = catchAsync(async (req, res) => {
 });
 
 
+const uploadFile = catchAsync(async (req, res) => {
+    const result = await userService.uploadFile(req);
+    return res.status(result.status).send(result);
+});
+
+const deleteFile = catchAsync(async (req, res) => {
+    const result = await userService.deleteFile(req.query.fileId);
+    return res.status(result.status).send(result);
+});
+
+
 module.exports = {
-    getTeachers, getStudents, remove
+    getTeachers, getStudents, remove, uploadFile, deleteFile
 };

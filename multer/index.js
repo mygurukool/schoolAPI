@@ -9,12 +9,11 @@ const url = config.mongoose.url;
 const storage = new GridFsStorage({
     url,
     file: (req, file) => {
+        // console.log('file', file);
         return {
+            filename: file.originalname,
             bucketName: 'files'
         };
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname)); //Appending extension
     },
 });
 

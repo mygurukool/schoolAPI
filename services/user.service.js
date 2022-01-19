@@ -1,12 +1,11 @@
 const httpStatus = require('http-status');
 const { ObjectId } = require('mongodb');
 const { axiosMiddleware } = require('../middlewares/axios');
-const { Group, User } = require('../models');
+const { Group, User, UploadFile } = require('../models');
 const { courseApis } = require('../utils/gapis');
 
 const getTeachers = async (req) => {
     try {
-        console.log('req.loginType ', req.loginType);
         if (req.loginType === 'mygurukool') {
             const teachers = await Group.findById(req.query.groupId)
             return ({ status: httpStatus.OK, data: teachers.teachers });
@@ -27,8 +26,10 @@ const getTeachers = async (req) => {
 
 const getStudents = async (req) => {
     try {
+        // console.log('req', req.loginType, req.query);
         if (req.loginType === 'mygurukool') {
             const students = await Group.findById(req.query.groupId)
+            // console.log('students', students);
             return ({ status: httpStatus.OK, data: students.students });
         } else if (req.loginType === 'google') {
             const courseStudents = await axiosMiddleware({ url: courseApis.getCourseStudents(req.query.courseId) }, req)
@@ -55,6 +56,27 @@ const remove = async (data) => {
 }
 
 
+const uploadFile = async (req) => {
+    try {
+        const userId = req.userId
+        await UploadFile.create({ ...req.body, studentId: userId, file: req.files[0] })
+        return ({ status: httpStatus.OK, message: 'File Uploaded Successfully' });
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+    }
+}
+
+const deleteFile = async (id) => {
+    try {
+        await UploadFile.findByIdAndDelete(id)
+        return ({ status: httpStatus.OK, message: 'File Deleted Successfully' });
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+    }
+}
+
 module.exports = {
-    getTeachers, getStudents, remove
+    getTeachers, getStudents, remove, uploadFile, deleteFile
 }

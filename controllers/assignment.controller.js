@@ -21,6 +21,16 @@ const remove = catchAsync(async (req, res) => {
     return res.status(result.status).send(result);
 });
 
+const submissions = catchAsync(async (req, res) => {
+    const result = await assignmentService.submissions(req);
+    return res.status(result.status).send(result);
+});
+
+const submissionsPoint = catchAsync(async (req, res) => {
+    const result = await assignmentService.submissionsPoint(req);
+    return res.status(result.status).send(result);
+});
+
 module.exports = {
-    all, create, update, remove
+    all, create, update, remove, submissions, submissionsPoint
 };
