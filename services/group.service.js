@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const { axiosMiddleware } = require('../middlewares/axios');
-const { Group } = require('../models');
+const { Group, Organization, User } = require('../models');
 const { courseApis } = require('../utils/gapis');
 
 const all = async (req) => {
@@ -32,7 +32,13 @@ const create = async (req) => {
         if (checkIfExist) {
             return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Group name already exist" });
         }
-        await Group.create({ ...data, users: [req.userId] })
+        const checkOrg = await Organization.findOne({ userId: req.userId })
+        let teachers = []
+        if (checkOrg.organizationSize === "1") {
+            const user = await User.findById(req.userId)
+            teachers = [user]
+        }
+        await Group.create({ ...data, users: [req.userId], teachers: teachers })
         return ({ status: httpStatus.OK, message: "Group created successfully" });
     } catch (error) {
         console.log(error);

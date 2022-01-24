@@ -14,6 +14,7 @@ const getTeachers = async (req) => {
             const teachers = await Promise.all(courseTeachers.teachers.map(t => {
                 return { courseId: t.courseId, teacherId: t.userId, name: t.profile.name.fullName, permissions: t.profile.permissions }
             }))
+            console.log('teachers', courseTeachers);
             return ({ status: httpStatus.OK, data: teachers });
         }
 

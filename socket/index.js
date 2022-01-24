@@ -121,7 +121,7 @@ const socket = (server) => {
             console.log("SEND_MESSAGES", room);
 
             const group = await GroupChat.findOne({ roomId: room.roomId })
-            const groupMessages = group.messages
+            const groupMessages = group ? group.messages : []
             const page = room.page
             const rowsPerPage = 5
             // const paginatedMessages = paginate(messages.messages, 20, room.page + 1)
@@ -185,7 +185,7 @@ const socket = (server) => {
         })
 
         socket.on("INITIALIZE_CONFERENCE", async (data) => {
-            // console.log('INITIALIZE_CONFERENCE', data);
+            console.log('INITIALIZE_CONFERENCE', data);
             socket.broadcast.to(data.courseId).emit("SET_CONFERENCE", data)
         })
 

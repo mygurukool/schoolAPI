@@ -7,6 +7,9 @@ const { courseApis } = require('../utils/gapis');
 const all = async (req) => {
     try {
         if (req.loginType === 'mygurukool') {
+            if (Object.keys(req.query).length <= 0) {
+                return ({ status: httpStatus.OK, data: [] });
+            }
             const courses = await Course.find(req.query)
             return ({ status: httpStatus.OK, data: courses });
         } else if (req.loginType === 'google') {
@@ -28,11 +31,9 @@ const create = async (req) => {
     try {
         const data = req.body
         if (req.loginType === 'mygurukool') {
-            const checkIfExist = await Course.findOne(data)
-            if (checkIfExist) {
-                return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Group name already exist" });
-            }
-            await Course.create(data)
+            await Promise.all(data.groupId.map(async g => {
+                await Course.create({ ...data, groupId: g })
+            }))
             return ({ status: httpStatus.OK, message: "Course created successfully" });
         }
     } catch (error) {
@@ -45,13 +46,14 @@ const update = async (req) => {
     try {
         const data = req.body
         if (req.loginType === 'mygurukool') {
-            const checkIfExist = await Course.findOne({ courseName: data.courseName, organizationId: data.organizationId })
-            if (checkIfExist && checkIfExist.courseName != data.courseName) {
-                const check = Course.find({ courseName: data.courseName, _id: data.id || data.id })
-                if (check.length > 0) {
-                    return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Course name already exist!" })
-                }
-            }
+            delete data.groupId
+            // const checkIfExist = await Course.findOne({ courseName: data.courseName, organizationId: data.organizationId })
+            // if (checkIfExist && checkIfExist.courseName != data.courseName) {
+            //     const check = Course.find({ courseName: data.courseName, _id: data.id || data.id })
+            //     if (check.length > 0) {
+            //         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Course name already exist!" })
+            //     }
+            // }
             await Course.findByIdAndUpdate(data.id || data._id, data)
             return ({ status: httpStatus.OK, message: "Course updated successfully" });
         }
