@@ -7,46 +7,46 @@ const Grid = require('gridfs-stream');
 const ogs = require('open-graph-scraper');
 const connection = mongoose.createConnection(config.mongoose.url);
 
-let gfs;
-const image_bucket_name = "files"
+// let gfs;
+// const image_bucket_name = "files"
 
-connection.once('open', () => {
-    // Init stream
-    gfs = Grid(connection.db, mongoose.mongo);
-    gfs.collection(image_bucket_name);
-})
+// connection.once('open', () => {
+//     // Init stream
+//     gfs = Grid(connection.db, mongoose.mongo);
+//     gfs.collection(image_bucket_name);
+// })
 
 const getImage = async (req, res) => {
     try {
         const { id, type } = req.params
-
+        let downloadStream = bucket.openDownloadStream(ObjectId(id));
         if (type == 'view') {
-            gfs.files.find({ _id: ObjectId(id) }).toArray(function (err, files) {
+            bucket.find({ _id: ObjectId(id) }).toArray(function (err, files) {
                 const file = files[0]
                 // console.log(file);
 
                 res.contentType(file.contentType)
-                var readStream = gfs.createReadStream({ _id: ObjectId(file._id) })
-                readStream.on('data', (chunk) => {
+                // var downloadStream = bucket.createReadStream({ _id: ObjectId(file._id) })
+                downloadStream.on('data', (chunk) => {
                     res.write(chunk)
                 })
-                readStream.on('end', (chunk) => {
+                downloadStream.on('end', (chunk) => {
                     res.end()
                 })
             })
         } else {
-            gfs.files.find({ _id: ObjectId(id) }).toArray(function (err, files) {
+            bucket.find({ _id: ObjectId(id) }).toArray(function (err, files) {
                 const file = files[0]
                 console.log(file);
 
                 res.contentType(file.contentType)
                 res.set('Content-Disposition', 'attachment; filename="' + file.filename + '"');
-                var readStream = gfs.createReadStream({ _id: ObjectId(file._id) })
+                // var readStream = bucket.createReadStream({ _id: ObjectId(file._id) })
 
-                readStream.on('end', (chunk) => {
+                downloadStream.on('end', (chunk) => {
                     res.end()
                 })
-                readStream.pipe(res);
+                downloadStream.pipe(res);
             })
         }
     } catch (error) {

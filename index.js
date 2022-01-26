@@ -6,12 +6,20 @@ const socket = require('./socket');
 const Grid = require('gridfs-stream')
 
 let server;
+
+const image_bucket_name = "files"
+
 mongoose.connect(config.mongoose.url, config.mongoose.options).then((db) => {
     logger.info('Connected to MongoDB');
     server = app.listen(config.port, () => {
         logger.info(`Listening to port ${config.port} and running on ${config.env}`);
+        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "files",
+        });
+        global.bucket = bucket;
     });
     socket(server)
+
 
 });
 mongoose.set('useFindAndModify', false);
