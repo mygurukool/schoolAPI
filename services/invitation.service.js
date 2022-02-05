@@ -221,7 +221,7 @@ const sendInvitation = async (data) => {
         try {
             await sgMail.sendMultiple(mailDetails)
         } catch (error) {
-            // return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
+            return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
 
         }
 
