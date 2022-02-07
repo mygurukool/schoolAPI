@@ -9,6 +9,7 @@ const assignment = require('./assignment.route')
 const invitation = require('./invitation.route')
 const user = require('./user.route');
 const util = require('./util.route')
+const events = require('./events.route')
 
 
 // router.post('/metadata', async (req, res) => {
@@ -27,5 +28,6 @@ router.use('/assignment', assignment)
 router.use('/invite', invitation)
 router.use('/user', user)
 router.use('/', util)
+router.use('/events', events)
 
 module.exports = router;

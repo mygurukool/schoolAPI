@@ -7,3 +7,4 @@ module.exports.Assignment = require('./assignment.model');
 module.exports.Invitation = require('./invitation.model');
 module.exports.UploadFile = require('./uploadfile.model');
 module.exports.StudentPoint = require('./studentpoint.model');
+module.exports.Events = require('./events.model');
