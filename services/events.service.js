@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Events } = require('../models');
-const moment = require('moment')
+const moment = require('moment');
+const { sendNotifications } = require('./notification.service');
 
 const all = async (req) => {
     try {
@@ -30,7 +31,22 @@ const all = async (req) => {
 
 const create = async (req) => {
     try {
-        await Events.create({ ...req.body, createdBy: req.userId, })
+        const added = await Events.create({ ...req.body, createdBy: req.userId, })
+        let notifiedUsers = []
+        console.log('added', added);
+        if (added.students.length > 0) {
+            await Promise.all(added.students.map(s => {
+                notifiedUsers.push(s)
+            }))
+        }
+        if (added.teachers.length > 0) {
+
+            await Promise.all(added.teachers.map(s => {
+                notifiedUsers.push(s)
+            }))
+        }
+        console.log('notifiedUsers', notifiedUsers);
+        await sendNotifications({ title: `A new event added for ${req.body.title}`, data: { time: JSON.stringify(new Date()) }, users: notifiedUsers })
         return ({ status: httpStatus.OK, message: "Events created successfully" });
     } catch (error) {
         console.log(error);

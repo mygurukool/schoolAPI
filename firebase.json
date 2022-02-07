@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mygurukool-f9cf2",
+  "private_key_id": "b8da1733c94c74f7729ee43d0b714ba9cafb011a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCva54oDPyRkWsX\nOAJeFeN0otx6WWuSanTD4mnteyx7df6NXzSfMnvy75WRVfZuHR1RFUMbCd6Z8+2l\nCq9piYuNjwPr5QL1WqPRoZsCDQeVbgUf5lJ8svyqFR3XqbzmwvTX8tzAgj6OX6u8\n0iEDPX5WhV8FpuIioVx5zC/IaLTMfSI86ZysxaaktA3/0lwkYsCTIDvm9sRKXIeH\nJEwwTaiGJQ2NL8MIQZYEvrIGWbi464yzXiPPyp006PSrmCnx1VeSprHQnQ8EAkjx\ngO9OUviRK2wUPsH4MWiUKWkp3Kg4HfPYXqmVWbn2NJJ6ZWPAdf9JX3zFY/20JRbj\nXD6lt185AgMBAAECggEAOhh5lgkLAoi2/0cQ3akBHekr/KctrZ1tE0yiSUCgUDkZ\nNye/LTQSgbfgAHSIOxqQUYCpq0Q/ARycaSrbQigH3DdvlInRS4GbvHr5c5nuF4qK\nzvBABEVg0VFSA1EXGxOY9AXeHzFjV1KO9WdgAIs2kp/0AtKslMx87Gd3sbcfnZMN\nSv1qTKM2SEZDbQ/Z7IUv3Z17j6Nvp4Mw5p6mMmstVTFeKaiMY9O8arC3pOvcH4Z3\nK4Z8ijq1ZRiVHzbPG/A+cKApK2B+Y9cCePzqyMNsStHZ5KlM9BF4D9ZZ9Iaf6wuQ\na/xV1bY9a7jm3rYcWMSN2ChNZcqbILU6u8TCwtQD2wKBgQDWAcpR2FTHxk6DH1Rc\nJug/ZHfopaz8teIkGqtNFSzLcAazVRGR1t9H8PcGTb9Asf8MiA+hMSPZ+KWFrxJj\nr8rjk6KI38p0jkmQBG/wFg6AqSQzavUhj9jPCQUai170tCjFNKpLRi0JFwkqm0Ep\no5EpV+92xayTHmzLRykLtB3ZfwKBgQDR14HDemY7jWa7PNSP5NyLU/7nHPLQLFBw\n9F8h+HcIi7vcmrnM3Kweq0JEjOpavG1JIP8GPbsPXHyu0PodS3FpSDmuYvJ2vcVu\n94MRKdcJIfrvPpVxME9Z46sr0e1Z8yE2Z99ZyREi/6MFgfaA+jZlNkCnqDwGr2ed\nIT7K/URzRwKBgQDD1beS1egfODU4gD7uZRw6hnHED3gReU+Lwmvnie0H7Wf0S3Bc\niMiiSLuEpTjStw+yJABJfXJVUNgHUYH+fyumvb8Kid/2cQ6YH7dfeI+k5SMfekz/\nfWblblehRtCKFSMJ83uyjnE/1DirKI+kzu1TbAjSI2oc5saf7mp9L0HxeQKBgCyQ\nVfCLp/ZxuyV8b6/3bJbySaoPTcnD/3ldjG6Mc8sO0eCxw0+sdak1uacRPhvy9EqZ\nhU9wAK/sdlYx70wVX4p6WjWcsd1hw/IjAmS8u/wmiUIRym71UYTHguyVcpCtv5ns\nSVSqDMef/qEGzrDpcm/gK67vXYAV9C08iDdXvhe1AoGBAK7Ey+crTEpdpKz19yPQ\nvuCJaGOe/exxFn2S7eN8cCgnsCoHc5dEfs8OhDSQ1quq7udj3dd/652HQltGVvup\njMX2GAyj/N72dBD4Lg3018W8HYpGjxvrtvitlYl7QIRLTOOc3zuOO9zK6sKptnNv\nzvak4q6XCOQZJu+doeawwb6K\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-z48wi@mygurukool-f9cf2.iam.gserviceaccount.com",
+  "client_id": "105825482454176988559",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-z48wi%40mygurukool-f9cf2.iam.gserviceaccount.com"
+}

@@ -10,14 +10,7 @@ const invitation = require('./invitation.route')
 const user = require('./user.route');
 const util = require('./util.route')
 const events = require('./events.route')
-
-
-// router.post('/metadata', async (req, res) => {
-//     const options = { url: req.body.url };
-//     await ogs(options, (error, results, response) => {
-//         res.send(results)
-//     });
-// })
+const notification = require('./notification.route')
 
 router.use('/auth', auth)
 router.use('/organization', organization)
@@ -29,5 +22,6 @@ router.use('/invite', invitation)
 router.use('/user', user)
 router.use('/', util)
 router.use('/events', events)
+router.use('/notification', notification)
 
 module.exports = router;
