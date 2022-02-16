@@ -45,6 +45,10 @@ const assignmentSchema = mongoose.Schema({
     audioVideo: {
         type: Array,
         required: false
+    },
+    status: {
+        type: Boolean,
+        default: true
     }
 });
 

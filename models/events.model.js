@@ -26,15 +26,17 @@ const eventsSchema = mongoose.Schema({
         type: Date,
         required: false
     },
-    students: [{
-        type: mongoose.SchemaTypes.ObjectId,
-        required: false
-    }
-    ],
-    teachers: [{
-        type: mongoose.SchemaTypes.ObjectId,
-        required: false
-    }
+    users: [
+        {
+            id: {
+                type: mongoose.SchemaTypes.ObjectId,
+                required: false
+            },
+            status: {
+                type: String,
+                required: false,
+            }
+        }
     ],
     status: {
         type: String,

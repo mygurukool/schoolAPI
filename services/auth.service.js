@@ -15,7 +15,7 @@ const login = async (req) => {
                 return ({ status: httpStatus.OK, user: { ...newuser, id: newuser.googleId }, message: "Login Successs" });
             }
             const updatedUser = await User.findByIdAndUpdate(findUser._id, data, { new: true })
-            return ({ status: httpStatus.OK, user: { ...updatedUser._doc, id: updatedUser.googleId }, loginType: 'google', token: data.token, message: "Login Successs" });
+            return ({ status: httpStatus.OK, user: { ...updatedUser._doc, id: updatedUser.googleId }, loginType: 'google', token: data.token, message: "Login Success" });
         } else if (data.loginType === 'mygurukool') {
             const user = await User.findOne({ email: data.email });
             if (!user) {
@@ -25,7 +25,7 @@ const login = async (req) => {
 
             const organization = await Organization.findById(user.organizationId)
 
-            return ({ status: httpStatus.OK, user: user, organization: organization, loginType: 'mygurukool', token: token, message: "Login Successs" });
+            return ({ status: httpStatus.OK, user: user, organization: organization, loginType: 'mygurukool', token: token, message: "Login Success" });
         }
     } catch (error) {
         console.log(error);

@@ -7,5 +7,6 @@ router.get('/', verify, eventsController.all)
 router.post('/create', verify, eventsController.create)
 router.put('/edit', verify, eventsController.update)
 router.delete('/delete', verify, eventsController.remove)
+router.post('/changestatus', verify, eventsController.changeStatus)
 
 module.exports = router;

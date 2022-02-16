@@ -18,7 +18,7 @@ admin.initializeApp({
 const register = async (req) => {
   try {
     const checkExist = await Token.find({ token: req.body.token })
-    console.log('checkExist', checkExist);
+    // console.log('checkExist', checkExist);
     if (checkExist.length > 0) {
       return { status: httpStatus.OK };
     }

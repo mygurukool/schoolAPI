@@ -21,6 +21,11 @@ const remove = catchAsync(async (req, res) => {
     return res.status(result.status).send(result);
 });
 
+const changeStatus = catchAsync(async (req, res) => {
+    const result = await eventsService.changeStatus(req);
+    return res.status(result.status).send(result);
+});
+
 module.exports = {
-    all, create, update, remove
+    all, create, update, remove, changeStatus
 };

@@ -9,7 +9,7 @@ const { courseApis } = require('../utils/gapis');
 const all = async (req) => {
     try {
         if (req.loginType === 'mygurukool') {
-            const assignment = await Assignment.find(req.query)
+            const assignment = await Assignment.find({ ...req.query, status: true })
             const newAssignment = await Promise.all(assignment.map(async a => {
                 const uploadExercises = await Promise.all(a.uploadExercises.map(async exercise => {
                     const userFiles = await UploadFile.find({ assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, fileId: exercise.id || exercise._id })
@@ -69,7 +69,9 @@ const remove = async (req) => {
     try {
         const data = req.body
         if (req.loginType === 'mygurukool') {
-            await Assignment.findByIdAndDelete(data.id || data._id)
+            // await Assignment.findByIdAndDelete(data.id || data._id)
+            await Assignment.findByIdAndUpdate(data.id || data._id, { status: false })
+
             return ({ status: httpStatus.OK, message: 'Assignment deleted successfully' });
         }
     } catch (error) {

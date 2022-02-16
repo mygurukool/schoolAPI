@@ -19,7 +19,7 @@ const all = async (req) => {
         }
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create group" });
 
     }
 
@@ -42,7 +42,7 @@ const create = async (req) => {
         return ({ status: httpStatus.OK, message: "Group created successfully" });
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create group" });
 
     }
 
