@@ -26,6 +26,10 @@ const groupSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    ageGroupId: {
+        type: String,
+        required: false
+    }
 });
 
 
