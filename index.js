@@ -3,11 +3,8 @@ const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const socket = require('./socket');
-const Grid = require('gridfs-stream')
 
 let server;
-
-const image_bucket_name = "files"
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then((db) => {
     logger.info('Connected to MongoDB');

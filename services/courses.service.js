@@ -2,7 +2,29 @@ const httpStatus = require('http-status');
 const { axiosMiddleware } = require('../middlewares/axios');
 const { Course } = require('../models');
 const { courseApis } = require('../utils/gapis');
+const fs = require('fs')
 
+
+const getCourseIcons = async (courseName) => {
+
+    const dir = 'public/course_icons/'
+
+    let subjectIcon = `default.jpg`;
+    const files = await fs.promises.readdir(dir)
+    // console.log('files', files);
+    files.forEach(icon => {
+        // console.log(icon);
+        let lastIndexOfbackSlash = icon.lastIndexOf("/");
+        let regex = new RegExp(courseName
+            .toLowerCase(), 'i');
+        if (courseName.toLowerCase().includes(icon.substring(lastIndexOfbackSlash + 1, icon.indexOf(".", lastIndexOfbackSlash)))) {
+            subjectIcon = icon;
+        }
+    })
+    return dir + subjectIcon;
+
+
+}
 
 const all = async (req) => {
     try {
@@ -11,11 +33,16 @@ const all = async (req) => {
                 return ({ status: httpStatus.OK, data: [] });
             }
             const courses = await Course.find(req.query)
-            return ({ status: httpStatus.OK, data: courses });
+            const newCourse = await Promise.all(courses.map(async c => {
+                // console.log('icon', await getCourseIcons(c.courseName));
+                return { ...c._doc, courseImage: await getCourseIcons(c.courseName) }
+            }))
+
+            return ({ status: httpStatus.OK, data: newCourse });
         } else if (req.loginType === 'google') {
             const courses = await axiosMiddleware({ url: courseApis.getCourses() }, req)
-            const newCourse = await Promise.all(courses.courses.map(c => {
-                return { ...c, courseName: c.name }
+            const newCourse = await Promise.all(courses.courses.map(async c => {
+                return { ...c, courseName: c.name, courseImage: await getCourseIcons(c.name) }
             }))
 
             return ({ status: httpStatus.OK, data: newCourse });

@@ -34,7 +34,7 @@ const all = async (req) => {
         return ({ status: httpStatus.OK, data: newEvents });
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to get events" });
 
     }
 
@@ -59,7 +59,7 @@ const create = async (req) => {
         return ({ status: httpStatus.OK, message: "Events created successfully" });
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create organization" });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create event" });
 
     }
 
@@ -82,15 +82,13 @@ const remove = async (data) => {
         return ({ status: httpStatus.OK, message: "Events deleted successfully" });
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to delete group" });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to delete event" });
 
     }
 }
 
 const changeStatus = async (req) => {
     try {
-        console.log('req.body', req.body);
-
         await Events.updateOne({ 'users.id': req.body.userId, _id: req.body.eventId }, {
             $set: {
                 'users.$.status': req.body.status,
