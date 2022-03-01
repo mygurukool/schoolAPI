@@ -37,31 +37,33 @@ const all = async (req) => {
 const create = async (req) => {
     try {
         console.log('req.body', req.body);
-        const audioVideo = JSON.parse(req.body.audioVideo)
+        const audioVideo = req.body.audioVideo ? JSON.parse(req.body.audioVideo) : []
+        const uploadExercises = req.body.uploadExercises ? JSON.parse(req.body.uploadExercises) : []
         if (req.loginType === 'mygurukool') {
-            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: req.files, audioVideo: audioVideo })
+            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: [...req.files, ...uploadExercises], audioVideo: audioVideo })
             return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
         }
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to create assignment" });
     }
 }
 
 const update = async (req) => {
     try {
         const data = req.body
-        console.log('data', data, req.files);
+        // console.log('data', data, req.files);
         if (req.loginType === 'mygurukool') {
-            const audioVideo = JSON.parse(data.audioVideo)
+            const audioVideo = data.audioVideo ? JSON.parse(data.audioVideo) : []
+            const uploadExercises = data.uploadExercises ? JSON.parse(data.uploadExercises) : []
             const students = JSON.parse(data.students)
             delete data.uploadExercises
-            await Assignment.findByIdAndUpdate(data.id || data._id, { ...data, students: students, organizationId: req.organizationId, audioVideo: audioVideo, $push: { uploadExercises: [...req.files] } })
+            await Assignment.findByIdAndUpdate(data.id || data._id, { ...data, students: students, organizationId: req.organizationId, audioVideo: audioVideo, $push: { uploadExercises: [...req.files, ...uploadExercises] } })
             return ({ status: httpStatus.OK, message: 'Assignment updated successfully' });
         }
     } catch (error) {
         console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: 'Failed to updated assignment' });
     }
 }
 
