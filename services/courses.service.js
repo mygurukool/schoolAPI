@@ -7,7 +7,7 @@ const fs = require('fs')
 
 const getCourseIcons = async (courseName) => {
 
-    const dir = 'public/course_icons/'
+    const dir = 'uploaded/course_icons/'
 
     let subjectIcon = `default.jpg`;
     const files = await fs.promises.readdir(dir)
