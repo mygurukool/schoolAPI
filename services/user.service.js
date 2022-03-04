@@ -60,18 +60,25 @@ const remove = async (data) => {
 const uploadFile = async (req) => {
     try {
         const userId = req.userId
-        await UploadFile.create({ ...req.body, studentId: userId, file: req.files[0] })
-        return ({ status: httpStatus.OK, message: 'File Uploaded Successfully' });
+        req.body.fileId = req.body.fileId !== 'undefined' ? req.body.fileId : undefined
+        const created = await UploadFile.create({ ...req.body, studentId: userId, file: req.files[0] })
+        return ({ status: httpStatus.OK, message: 'File Uploaded Successfully', data: created });
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to upload file" });
     }
 }
 
-const deleteFile = async (id) => {
+const deleteFile = async (query, userId) => {
     try {
-        await UploadFile.findByIdAndDelete(id)
-        return ({ status: httpStatus.OK, message: 'File Deleted Successfully' });
+        const { assignmentId, id, fileId } = query
+        console.log(query);
+        if (id) {
+            await UploadFile.findByIdAndDelete(id)
+        } else {
+            await UploadFile.findOneAndDelete({ studentId: userId, assignmentId: assignmentId })
+        }
+        return ({ status: httpStatus.OK, message: 'File Deleted Successfully', data: { fileId: fileId, assignmentId: assignmentId, id: id } });
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to delete file" });

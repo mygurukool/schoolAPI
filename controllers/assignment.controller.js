@@ -31,6 +31,11 @@ const submissionsPoint = catchAsync(async (req, res) => {
     return res.status(result.status).send(result);
 });
 
+const deleteExcercise = catchAsync(async (req, res) => {
+    const result = await assignmentService.deleteExcercise(req);
+    return res.status(result.status).send(result);
+});
+
 module.exports = {
-    all, create, update, remove, submissions, submissionsPoint
+    all, create, update, remove, submissions, submissionsPoint, deleteExcercise
 };

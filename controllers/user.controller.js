@@ -23,7 +23,7 @@ const uploadFile = catchAsync(async (req, res) => {
 });
 
 const deleteFile = catchAsync(async (req, res) => {
-    const result = await userService.deleteFile(req.query.fileId);
+    const result = await userService.deleteFile(req.query, req.userId);
     return res.status(result.status).send(result);
 });
 

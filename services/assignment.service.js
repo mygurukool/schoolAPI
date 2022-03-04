@@ -11,10 +11,21 @@ const all = async (req) => {
         if (req.loginType === 'mygurukool') {
             const assignment = await Assignment.find({ ...req.query, status: true })
             const newAssignment = await Promise.all(assignment.map(async a => {
-                const uploadExercises = await Promise.all(a.uploadExercises.map(async exercise => {
-                    const userFiles = await UploadFile.find({ assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, fileId: exercise.id || exercise._id })
-                    return { ...exercise, files: userFiles }
-                }))
+                console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
+                let uploadExercises = []
+                if (a.uploadExercises.length > 0) {
+                    uploadExercises = await Promise.all(a.uploadExercises.map(async exercise => {
+
+                        const userFiles = await UploadFile.find({ assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, fileId: exercise.id || exercise._id })
+
+                        return { ...exercise, files: userFiles }
+                    }))
+                }
+                else {
+                    const userFiles = await UploadFile.find({ assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, })
+
+                    uploadExercises = [{ files: userFiles }]
+                }
                 return { ...a._doc, uploadExercises: uploadExercises, dueDate: moment(a.dueDate).format(DATETIMEFORMAT) }
             }))
             return ({ status: httpStatus.OK, data: { assignments: newAssignment } });
@@ -39,8 +50,17 @@ const create = async (req) => {
         console.log('req.body', req.body);
         const audioVideo = req.body.audioVideo ? JSON.parse(req.body.audioVideo) : []
         const uploadExercises = req.body.uploadExercises ? JSON.parse(req.body.uploadExercises) : []
+
+        const newExercise = await Promise.all(uploadExercises.map(u => {
+            let id = new ObjectId()
+            if (!u.id) {
+                return { ...u, id: id }
+            }
+            return u
+        }))
+
         if (req.loginType === 'mygurukool') {
-            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: [...req.files, ...uploadExercises], audioVideo: audioVideo })
+            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: [...req.files, ...newExercise], audioVideo: audioVideo })
             return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
         }
     } catch (error) {
@@ -52,13 +72,25 @@ const create = async (req) => {
 const update = async (req) => {
     try {
         const data = req.body
-        // console.log('data', data, req.files);
+        console.log('data', data, req.files);
         if (req.loginType === 'mygurukool') {
             const audioVideo = data.audioVideo ? JSON.parse(data.audioVideo) : []
             const uploadExercises = data.uploadExercises ? JSON.parse(data.uploadExercises) : []
+            console.log('uploadExercises', uploadExercises);
+            const newExercise = await Promise.all(uploadExercises.map(u => {
+                let id = new ObjectId()
+                console.log('yu', u);
+                if (u) {
+                    if (!u.id) {
+                        return { ...u, id: id }
+                    }
+                    return u
+                }
+            }))
+            console.log('newExercise', newExercise);
             const students = JSON.parse(data.students)
             delete data.uploadExercises
-            await Assignment.findByIdAndUpdate(data.id || data._id, { ...data, students: students, organizationId: req.organizationId, audioVideo: audioVideo, $push: { uploadExercises: [...req.files, ...uploadExercises] } })
+            await Assignment.findByIdAndUpdate(data.id || data._id, { ...data, students: students, organizationId: req.organizationId, audioVideo: audioVideo, $push: { uploadExercises: [...req.files, ...newExercise] } })
             return ({ status: httpStatus.OK, message: 'Assignment updated successfully' });
         }
     } catch (error) {
@@ -120,7 +152,21 @@ const submissionsPoint = async (req) => {
     }
 }
 
+const deleteExcercise = async (req) => {
+    try {
+        const data = req.body
+        if (req.loginType === 'mygurukool') {
+            console.log('req', req.body);
+            await Assignment.findByIdAndUpdate(data.assignmentId, { $pull: { uploadExercises: { id: ObjectId(req.body.id) } } })
+            return ({ status: httpStatus.OK });
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+    }
+}
+
 
 module.exports = {
-    all, create, update, remove, submissions, submissionsPoint
+    all, create, update, remove, submissions, submissionsPoint, deleteExcercise
 }
