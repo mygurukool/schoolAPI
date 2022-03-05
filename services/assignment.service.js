@@ -11,7 +11,7 @@ const all = async (req) => {
         if (req.loginType === 'mygurukool') {
             const assignment = await Assignment.find({ ...req.query, status: true })
             const newAssignment = await Promise.all(assignment.map(async a => {
-                console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
+                // console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
                 let uploadExercises = []
                 if (a.uploadExercises.length > 0) {
                     uploadExercises = await Promise.all(a.uploadExercises.map(async exercise => {
@@ -122,7 +122,6 @@ const submissions = async (req) => {
             const studentFiles = await Promise.all(assignment.students.map(async s => {
                 const student = await User.findById(s)
                 const points = await StudentPoint.findOne({ assignmentId: data.id || data._id, studentId: s, })
-                console.log('points', points);
                 const files = await Promise.all(assignment.uploadExercises.map(async exercise => {
                     const userFiles = await UploadFile.find({ assignmentId: data.id || data._id, studentId: s, fileId: exercise.id || exercise._id })
                     return { ...exercise, files: userFiles }
@@ -167,6 +166,20 @@ const deleteExcercise = async (req) => {
 }
 
 
+const getFiles = async (req) => {
+    try {
+        const data = req.query
+        if (req.loginType === 'mygurukool') {
+            console.log('req', req.body);
+            const files = await UploadFile.find({ assignmentId: data.assignmentId, studentId: data.studentId })
+            return ({ status: httpStatus.OK, data: files });
+        }
+    } catch (error) {
+        console.log(error);
+        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+    }
+}
+
 module.exports = {
-    all, create, update, remove, submissions, submissionsPoint, deleteExcercise
+    all, create, update, remove, submissions, submissionsPoint, deleteExcercise, getFiles
 }

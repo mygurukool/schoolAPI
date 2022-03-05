@@ -11,5 +11,7 @@ router.delete('/delete', verify, assignmentController.remove)
 router.get('/submissions', verify, assignmentController.submissions)
 router.post('/submissions/point', verify, assignmentController.submissionsPoint)
 router.delete('/exercisefile', verify, assignmentController.deleteExcercise)
+router.get('/files', verify, assignmentController.getFiles)
+
 
 module.exports = router;

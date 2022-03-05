@@ -36,6 +36,11 @@ const deleteExcercise = catchAsync(async (req, res) => {
     return res.status(result.status).send(result);
 });
 
+const getFiles = catchAsync(async (req, res) => {
+    const result = await assignmentService.getFiles(req);
+    return res.status(result.status).send(result);
+});
+
 module.exports = {
-    all, create, update, remove, submissions, submissionsPoint, deleteExcercise
+    all, create, update, remove, submissions, submissionsPoint, deleteExcercise, getFiles
 };

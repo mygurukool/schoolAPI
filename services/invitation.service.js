@@ -239,10 +239,10 @@ const sendInvitation = async (data) => {
 const acceptInvitation = async (data) => {
     try {
         const invitation = await Invitation.findById(data.id || data._id)
-        const emailExist = await invitation.peoples.includes(data.email)
-        if (!emailExist) {
-            return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No invitation found for this email" });
-        }
+        // const emailExist = await invitation.peoples.includes(data.email)
+        // if (!emailExist) {
+        //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No invitation found for this email" });
+        // }
         const salt = await bcrypt.genSalt(10);
 
         const hashPassword = await bcrypt.hash(data.password, salt);
@@ -254,6 +254,12 @@ const acceptInvitation = async (data) => {
                 await Group.findByIdAndUpdate(invitation.groupId, { $push: { teachers: createdUser, users: createdUser.id || createdUser._id, } })
             } else {
                 await Group.findByIdAndUpdate(invitation.groupId, { $push: { students: createdUser, users: createdUser.id || createdUser._id, } })
+            }
+        } else {
+            if (data.role === 'TEACHER') {
+                await Group.findByIdAndUpdate(invitation.groupId, { $push: { teachers: checkUser, users: checkUser.id || checkUser._id, } })
+            } else {
+                await Group.findByIdAndUpdate(invitation.groupId, { $push: { students: checkUser, users: checkUser.id || checkUser._id, } })
             }
         }
         return ({ status: httpStatus.OK, message: 'Invitation accepted' });
