@@ -5,7 +5,7 @@ const { sendNotifications } = require('./notification.service');
 
 const all = async (req) => {
     try {
-        console.log('start', moment(req.query.start).startOf('day').toDate(), 'end', moment(req.query.end).endOf('day').toDate());
+        // console.log('start', moment(req.query.start).startOf('day').toDate(), 'end', moment(req.query.end).endOf('day').toDate());
         const events = await Events.find({
             $or: [
                 { createdBy: req.userId },

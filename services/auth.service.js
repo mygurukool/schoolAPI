@@ -57,7 +57,7 @@ const details = async (req) => {
                     'Authorization': `Bearer ${token}`
                 }
             })
-            return ({ status: httpStatus.OK, user: { ...user.data, imageUrl: user.data.picture }, message: "User details found successfully" });
+            return ({ status: httpStatus.OK, user: { ...user.data, imageUrl: user.data.picture }, loginType: 'google', message: "User details found successfully" });
 
         } else {
             const verified = jwt.verify(token, process.env.JWT_SECRET);
@@ -71,7 +71,7 @@ const details = async (req) => {
             if (!user) {
                 return ({ status: httpStatus.NOT_FOUND, message: "user does not exist" });
             }
-            return ({ status: httpStatus.OK, user: user, organization: organization, message: "User details found successfully" });
+            return ({ status: httpStatus.OK, user: user, loginType: 'mygurukool', organization: organization, message: "User details found successfully" });
 
         }
     } catch (error) {

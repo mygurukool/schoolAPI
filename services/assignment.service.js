@@ -50,7 +50,7 @@ const create = async (req) => {
         console.log('req.body', req.body);
         const audioVideo = req.body.audioVideo ? JSON.parse(req.body.audioVideo) : []
         const uploadExercises = req.body.uploadExercises ? JSON.parse(req.body.uploadExercises) : []
-
+        const students = req.body.students ? JSON.parse(req.body.students) : []
         const newExercise = await Promise.all(uploadExercises.map(u => {
             let id = new ObjectId()
             if (!u.id) {
@@ -60,7 +60,7 @@ const create = async (req) => {
         }))
 
         if (req.loginType === 'mygurukool') {
-            await Assignment.create({ ...req.body, organizationId: req.organizationId, userId: req.userId, uploadExercises: [...req.files, ...newExercise], audioVideo: audioVideo })
+            await Assignment.create({ ...req.body, students: students, organizationId: req.organizationId, userId: req.userId, uploadExercises: [...req.files, ...newExercise], audioVideo: audioVideo })
             return ({ status: httpStatus.OK, message: 'Assignment created successfully' });
         }
     } catch (error) {
@@ -119,6 +119,7 @@ const submissions = async (req) => {
         const data = req.query
         if (req.loginType === 'mygurukool') {
             const assignment = await Assignment.findById(data.id || data._id)
+            console.log('assignment', assignment);
             const studentFiles = await Promise.all(assignment.students.map(async s => {
                 const student = await User.findById(s)
                 const points = await StudentPoint.findOne({ assignmentId: data.id || data._id, studentId: s, })
