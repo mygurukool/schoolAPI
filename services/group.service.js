@@ -6,7 +6,11 @@ const { courseApis } = require('../utils/gapis');
 const all = async (req) => {
     try {
         if (req.loginType === 'mygurukool') {
-            const groups = await Group.find({ users: { $in: [req.userId] } })
+            const allgroups = await Group.find({ users: { $in: [req.userId] } })
+            const groups = await Promise.all(allgroups.map(async c => {
+                const org = await Organization.findById(c.organizationId)
+                return { ...c._doc, organizationName: org.organizationName }
+            }))
             return ({ status: httpStatus.OK, data: groups });
         }
         else if (req.loginType === 'google') {
