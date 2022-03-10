@@ -87,7 +87,6 @@ const update = async (req) => {
                     return u
                 }
             }))
-            console.log('newExercise', newExercise);
             const students = JSON.parse(data.students)
             delete data.uploadExercises
             await Assignment.findByIdAndUpdate(data.id || data._id, { ...data, students: students, organizationId: req.organizationId, audioVideo: audioVideo, $push: { uploadExercises: [...req.files, ...newExercise] } })

@@ -47,7 +47,8 @@ const getStudents = async (req) => {
 
 const remove = async (data) => {
     try {
-        await User.findByIdAndDelete(data.id)
+        console.log('data', data);
+        // await User.findByIdAndDelete(data.id)
         await Group.findByIdAndUpdate(data.groupId, { $pull: { users: data.id, teachers: { _id: ObjectId(data.id), }, students: { _id: ObjectId(data.id) } } })
         return ({ status: httpStatus.OK, message: 'Deleted Successfully' });
     } catch (error) {
