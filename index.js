@@ -1,27 +1,27 @@
-const mongoose = require('mongoose');
-const app = require('./app');
-const config = require('./config/config');
-const logger = require('./config/logger');
-const socket = require('./socket');
+const mongoose = require("mongoose");
+const app = require("./app");
+const config = require("./config/config");
+const logger = require("./config/logger");
+const socket = require("./socket");
 
 let server;
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then((db) => {
-    logger.info('Connected to MongoDB');
-    server = app.listen(config.port, () => {
-        logger.info(`Listening to port ${config.port} and running on ${config.env}`);
-        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "files",
-        });
-        global.bucket = bucket;
+  logger.info("Connected to MongoDB");
+  server = app.listen(config.port, () => {
+    logger.info(
+      `Listening to port ${config.port} and running on ${config.env}`
+    );
+    let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "files",
     });
-    socket(server)
-
-
+    global.bucket = bucket;
+  });
+  socket(server);
 });
-mongoose.set('useFindAndModify', false);
-mongoose.set('toJSON', {
-    virtuals: true
+mongoose.set("useFindAndModify", false);
+mongoose.set("toJSON", {
+  virtuals: true,
 });
 
 // const exitHandler = () => {
