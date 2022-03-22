@@ -4,6 +4,8 @@ const logger = require("../config/logger");
 const config = require("../config/config");
 const { GroupChat } = require("../models");
 const chatSocket = require("./chatsocket");
+const conferencesocket = require("./conferencesocket");
+const whiteboardsocket = require("./whieboardsocket");
 
 const socket = (server) => {
   // const socketServer = http.createServer(app)
@@ -20,10 +22,10 @@ const socket = (server) => {
     chatSocket(socket, io);
   });
   io.of("/whiteboard").on("connection", (socket) => {
-    console.log(" whiteboard socket connection");
+    whiteboardsocket(socket, io);
   });
   io.of("/conference").on("connection", (socket) => {
-    console.log(" conference socket connection");
+    conferencesocket(socket, io);
   });
 
   // io.of("/chat").on("connection", (socket) => {
