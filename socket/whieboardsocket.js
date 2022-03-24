@@ -6,6 +6,8 @@ const whiteboardsocket = (socket, io) => {
 
   socket.join(courseId);
   socket.on("CREATE_WHITEBOARD", async (req) => {
+    socket.emit("SET_CONFERENCE", data);
+
     socket.broadcast.to(courseId).emit("SET_WHITEBOARD_URL", req.whiteBoardUrl);
   });
 
