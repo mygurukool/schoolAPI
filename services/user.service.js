@@ -8,6 +8,7 @@ const getTeachers = async (req) => {
   try {
     if (req.loginType === "mygurukool") {
       const teachers = await Group.findById(req.query.groupId);
+      console.log("teachers", teachers);
       return {
         status: httpStatus.OK,
         data: teachers

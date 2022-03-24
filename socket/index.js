@@ -18,15 +18,24 @@ const socket = (server) => {
       methods: ["GET", "POST"],
     },
   });
-  io.of("/chat").on("connection", (socket) => {
-    chatSocket(socket, io);
+  // io.on("connection", (socket) => {
+  //   const {path} = socket.handshake.query
+  //   console.log('path')
+  //   chatSocket(socket, io);
+  // });
+  io.on("connection", (socket) => {
+    const { path } = socket.handshake.query;
+    if (path === "whiteboard") {
+      whiteboardsocket(socket, io);
+    } else if (path === "conference") {
+      conferencesocket(socket, io);
+    } else if (path === "chat") {
+      chatSocket(socket, io);
+    }
   });
-  io.of("/whiteboard").on("connection", (socket) => {
-    whiteboardsocket(socket, io);
-  });
-  io.of("/conference").on("connection", (socket) => {
-    conferencesocket(socket, io);
-  });
+  // io.of("/conference").on("connection", (socket) => {
+  //   conferencesocket(socket, io);
+  // });
 
   // io.of("/chat").on("connection", (socket) => {
   //   console.log(" chat socket connection", socket.handshake);
