@@ -4,34 +4,54 @@ const { axiosMiddleware } = require("../middlewares/axios");
 const { Group, User, UploadFile } = require("../models");
 const { courseApis } = require("../utils/gapis");
 
-const getTeachers = async (req) => {
+const filterOutCurrentUser = ({ userId, data }) => {
+  return data.filter((a) => a.id !== userId || a._id !== userId);
+};
+
+const getTeachers = async ({
+  groupId,
+  userId,
+  courseId,
+  returnCurrentUser,
+  loginType,
+  request: req,
+}) => {
   try {
-    if (req.loginType === "mygurukool") {
-      const teachers = await Group.findById(req.query.groupId);
-      console.log("teachers", teachers);
+    if (loginType === "mygurukool") {
+      const group = await Group.findById(groupId);
+      const groupTeachers = await Promise.all(
+        group.teachers.map(async (t) => {
+          const user = await User.findById(t.id || t._id);
+          return user;
+        })
+      );
       return {
         status: httpStatus.OK,
-        data: teachers
-          ? teachers.teachers.filter((s) => s._id !== req.userId)
-          : [],
+        data: returnCurrentUser
+          ? groupTeachers
+          : filterOutCurrentUser({ userId, data: groupTeachers }),
       };
-    } else if (req.loginType === "google") {
+    } else if (loginType === "google") {
       const courseTeachers = await axiosMiddleware(
-        { url: courseApis.getCourseTeachers(req.query.courseId) },
+        { url: courseApis.getCourseTeachers(courseId) },
         req
       );
       const teachers = await Promise.all(
         courseTeachers.teachers.map((t) => {
           return {
             courseId: t.courseId,
-            teacherId: t.userId,
+            id: t.userId,
             name: t.profile.name.fullName,
-            permissions: t.profile.permissions,
           };
         })
       );
-      console.log("teachers", courseTeachers);
-      return { status: httpStatus.OK, data: teachers };
+
+      return {
+        status: httpStatus.OK,
+        data: returnCurrentUser
+          ? teachers
+          : filterOutCurrentUser({ userId, data: teachers }),
+      };
     }
   } catch (error) {
     console.log(error);
@@ -42,37 +62,52 @@ const getTeachers = async (req) => {
   }
 };
 
-const getStudents = async (req) => {
+const getStudents = async ({
+  groupId,
+  userId,
+  courseId,
+  returnCurrentUser,
+  loginType,
+  request: req,
+}) => {
   try {
-    // console.log('req', req.loginType, req.query);
-    if (req.loginType === "mygurukool") {
-      const students = await Group.findById(req.query.groupId);
-      const restosend = students
-        ? students.students.filter(
-            (s) => JSON.stringify(s._id) !== JSON.stringify(req.userId)
-          )
-        : [];
+    if (loginType === "mygurukool") {
+      const group = await Group.findById(groupId);
+
+      const groupStudents = await Promise.all(
+        group.students.map(async (t) => {
+          const user = await User.findById(t.id || t._id);
+          return user;
+        })
+      );
+
       return {
         status: httpStatus.OK,
-        data: restosend,
+        data: returnCurrentUser
+          ? groupStudents
+          : filterOutCurrentUser({ userId, data: groupStudents }),
       };
-    } else if (req.loginType === "google") {
+    } else if (loginType === "google") {
       const courseStudents = await axiosMiddleware(
-        { url: courseApis.getCourseStudents(req.query.courseId) },
+        { url: courseApis.getCourseStudents(courseId) },
         req
       );
       const students = await Promise.all(
         courseStudents.students.map((t) => {
           return {
             courseId: t.courseId,
-            studentId: t.userId,
+            id: t.userId,
             name: t.profile.name.fullName,
-            permissions: t.profile.permissions,
           };
         })
       );
 
-      return { status: httpStatus.OK, data: students };
+      return {
+        status: httpStatus.OK,
+        data: returnCurrentUser
+          ? students
+          : filterOutCurrentUser({ userId, data: students }),
+      };
     }
   } catch (error) {
     console.log(error);
@@ -85,13 +120,11 @@ const getStudents = async (req) => {
 
 const remove = async (data) => {
   try {
-    console.log("data", data);
-    // await User.findByIdAndDelete(data.id)
     await Group.findByIdAndUpdate(data.groupId, {
       $pull: {
         users: data.id,
-        teachers: { _id: ObjectId(data.id) },
-        students: { _id: ObjectId(data.id) },
+        teachers: ObjectId(data.id),
+        students: ObjectId(data.id),
       },
     });
     return { status: httpStatus.OK, message: "Deleted Successfully" };

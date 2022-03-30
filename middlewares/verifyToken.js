@@ -3,11 +3,13 @@ const { User } = require("../models");
 
 async function auth(req, res, next) {
   const token = req.header("Authorization");
-  const loginType = req.header("LoginType")
+  const loginType = req.header("LoginType");
+  const userId = req.header("userId");
+
   if (!token) return res.status(401).send({ message: "Access denied" });
 
   try {
-    if (loginType === 'mygurukool') {
+    if (loginType === "mygurukool") {
       const verified = jwt.verify(token, process.env.JWT_SECRET);
       if (!verified) {
         return res.status(401).send({ message: "Access denied" });
@@ -18,12 +20,22 @@ async function auth(req, res, next) {
       if (!users) {
         return res.status(404).send({ message: "user not found" });
       }
-      req.organizationId = users.organizationId,
-        req.userId = verified._id;
+      (req.organizationId = users.organizationId), (req.userId = verified._id);
     }
-    req.loginType = loginType,
+    if (loginType === "google") {
+      const users = await User.findOne({
+        "loginTypes.id": userId,
+      });
 
-      next();
+      console.log("google case", userId, users);
+
+      if (!users) {
+        return res.status(404).send({ message: "user not found" });
+      }
+      // req.organizationId = users.organizationId,
+      req.userId = userId;
+    }
+    (req.loginType = loginType), next();
   } catch (error) {
     res.status(400).send({ message: "Invalid Token" });
   }

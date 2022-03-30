@@ -73,6 +73,14 @@ const userSchema = mongoose.Schema(
 
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
+userSchema.set("toJSON", {
+  transform: function (doc, ret, options) {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+    delete ret.password;
+  },
+});
 
 const User = mongoose.model("User", userSchema);
 

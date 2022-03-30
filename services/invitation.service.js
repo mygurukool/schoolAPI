@@ -1,40 +1,45 @@
-const httpStatus = require('http-status');
-const config = require('../config/config');
-const Invitation = require('../models/invitation.model');
-const sgMail = require('@sendgrid/mail');
-const { User, Group } = require('../models');
+const httpStatus = require("http-status");
+const config = require("../config/config");
+const Invitation = require("../models/invitation.model");
+const sgMail = require("@sendgrid/mail");
+const { User, Group } = require("../models");
 const bcrypt = require("bcryptjs");
 
 const getInvitation = async (id) => {
-    try {
-        const invitation = await Invitation.findById(id)
-        return ({ status: httpStatus.OK, data: { ...invitation._doc, peoples: [] } });
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to get invitations" });
-    }
-}
+  try {
+    const invitation = await Invitation.findById(id);
+    return { status: httpStatus.OK, data: { ...invitation._doc, peoples: [] } };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to get invitations",
+    };
+  }
+};
 
 const sendInvitation = async (data) => {
-    try {
-        // if (!config.email.sendgrid_api_key) {
-        //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No Api key found" });
-        // }
-        const createInvitation = await Invitation.create(data)
-        const filteredPeoples = await Promise.all(data.peoples.filter(async f => {
-            const foundUser = await User.findOne({ email: f })
-            if (!foundUser) {
-                return true
-            }
-            return false
-        }))
-        sgMail.setApiKey(config.email.sendgrid_api_key);
-        const invitationLink = `https://mougli.school/invitation/${data.type}/${createInvitation._id}`;
-        let mailDetails = {
-            from: config.email.from,
-            to: filteredPeoples,
-            subject: "Mygurukool Invitation",
-            html: `<!DOCTYPE html>
+  try {
+    // if (!config.email.sendgrid_api_key) {
+    //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No Api key found" });
+    // }
+    const createInvitation = await Invitation.create(data);
+    const filteredPeoples = await Promise.all(
+      data.peoples.filter(async (f) => {
+        const foundUser = await User.findOne({ email: f });
+        if (!foundUser) {
+          return true;
+        }
+        return false;
+      })
+    );
+    sgMail.setApiKey(config.email.sendgrid_api_key);
+    const invitationLink = `https://mougli.school/invitation/${data.type}/${createInvitation._id}`;
+    let mailDetails = {
+      from: config.email.from,
+      to: filteredPeoples,
+      subject: "Mygurukool Invitation",
+      html: `<!DOCTYPE html>
             <html>
 
             <head>
@@ -217,59 +222,94 @@ const sendInvitation = async (data) => {
             </body>
 
             </html>`,
-        };
-        try {
-            await sgMail.sendMultiple(mailDetails)
-        } catch (error) {
-            // return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
-
-        }
-
-        return ({ status: httpStatus.OK, data: invitationLink, message: "Invitation sent successfully" });
-
+    };
+    try {
+      await sgMail.sendMultiple(mailDetails);
     } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to sent invitations" });
-
+      // return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
     }
 
-}
-
+    return {
+      status: httpStatus.OK,
+      data: invitationLink,
+      message: "Invitation sent successfully",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to sent invitations",
+    };
+  }
+};
 
 const acceptInvitation = async (data) => {
-    try {
-        const invitation = await Invitation.findById(data.id || data._id)
-        // const emailExist = await invitation.peoples.includes(data.email)
-        // if (!emailExist) {
-        //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No invitation found for this email" });
-        // }
-        const salt = await bcrypt.genSalt(10);
+  try {
+    const invitation = await Invitation.findById(data.id || data._id);
+    // const emailExist = await invitation.peoples.includes(data.email)
+    // if (!emailExist) {
+    //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No invitation found for this email" });
+    // }
+    const salt = await bcrypt.genSalt(10);
 
-        const hashPassword = await bcrypt.hash(data.password, salt);
-        const checkUser = await User.findOne({ email: data.email })
+    const hashPassword = await bcrypt.hash(data.password, salt);
+    const checkUser = await User.findOne({ email: data.email });
 
-        if (!checkUser) {
-            const createdUser = await User.create({ organizationId: invitation.organizationId, groupId: invitation.groupId, name: data.name, email: data.email, loginType: 'mygurukool', password: hashPassword, role: data.role, permissions: data.permissions })
-            if (data.role === 'TEACHER') {
-                await Group.findByIdAndUpdate(invitation.groupId, { $push: { teachers: createdUser, users: createdUser.id || createdUser._id, } })
-            } else {
-                await Group.findByIdAndUpdate(invitation.groupId, { $push: { students: createdUser, users: createdUser.id || createdUser._id, } })
-            }
-        } else {
-            if (data.role === 'TEACHER') {
-                await Group.findByIdAndUpdate(invitation.groupId, { $push: { teachers: checkUser, users: checkUser.id || checkUser._id, } })
-            } else {
-                await Group.findByIdAndUpdate(invitation.groupId, { $push: { students: checkUser, users: checkUser.id || checkUser._id, } })
-            }
-        }
-        return ({ status: httpStatus.OK, message: 'Invitation accepted' });
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to get invitations" });
+    if (!checkUser) {
+      const createdUser = await User.create({
+        organizationId: invitation.organizationId,
+        groupId: invitation.groupId,
+        name: data.name,
+        email: data.email,
+        loginType: "mygurukool",
+        password: hashPassword,
+        role: data.role,
+        permissions: data.permissions,
+      });
+      if (data.role === "TEACHER") {
+        await Group.findByIdAndUpdate(invitation.groupId, {
+          $push: {
+            teachers: createdUser.id || createdUser._id,
+            users: createdUser.id || createdUser._id,
+          },
+        });
+      } else {
+        await Group.findByIdAndUpdate(invitation.groupId, {
+          $push: {
+            students: createdUser.id || createdUser._id,
+            users: createdUser.id || createdUser._id,
+          },
+        });
+      }
+    } else {
+      if (data.role === "TEACHER") {
+        await Group.findByIdAndUpdate(invitation.groupId, {
+          $push: {
+            teachers: checkUser.id || checkUser._id,
+            users: checkUser.id || checkUser._id,
+          },
+        });
+      } else {
+        await Group.findByIdAndUpdate(invitation.groupId, {
+          $push: {
+            students: checkUser.id || checkUser._id,
+            users: checkUser.id || checkUser._id,
+          },
+        });
+      }
     }
-}
-
+    return { status: httpStatus.OK, message: "Invitation accepted" };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to get invitations",
+    };
+  }
+};
 
 module.exports = {
-    getInvitation, sendInvitation, acceptInvitation
-}
+  getInvitation,
+  sendInvitation,
+  acceptInvitation,
+};

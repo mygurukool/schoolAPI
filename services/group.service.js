@@ -2,31 +2,66 @@ const httpStatus = require("http-status");
 const { axiosMiddleware } = require("../middlewares/axios");
 const { Group, Organization, User } = require("../models");
 const { courseApis } = require("../utils/gapis");
+const PERMISSIONS = require("../utils/permissions");
+const { getTeachers } = require("./user.service");
 
 const all = async (req) => {
   try {
     if (req.loginType === "mygurukool") {
       const allgroups = await Group.find({ users: { $in: [req.userId] } });
+      const user = await User.findById(req.userId);
       const groups = await Promise.all(
         allgroups.map(async (c) => {
           const org = await Organization.findById(c.organizationId);
-          return { ...c._doc, organizationName: org.organizationName };
+          return {
+            ...c._doc,
+            organizationName: org.organizationName,
+            permissions: user.permissions,
+          };
         })
       );
       return { status: httpStatus.OK, data: groups };
     } else if (req.loginType === "google") {
       const courses = await axiosMiddleware(
-        { url: courseApis.getCourses() },
+        {
+          url: courseApis.getCourses(),
+        },
         req
       );
-      console.log("groups", courses);
       let groups = [];
+
+      const isCourseTeacher = courses.courses.some(
+        (a) => a.ownerId === req.userId
+      );
+
       await Promise.all(
-        courses.courses.map((c) => {
-          groups.push({ groupName: c.section });
+        courses.courses.map(async (c) => {
+          const teachers = await getTeachers({
+            courseId: c.id,
+            userId: req.userId,
+            returnCurrentUser: true,
+            loginType: req.loginType,
+            request: req,
+          });
+
+          const isTeacher = teachers.data.some((t) => t.id === req.userId);
+
+          groups.push({
+            groupName: c.section,
+            permissions:
+              isTeacher || isCourseTeacher
+                ? PERMISSIONS["TEACHER"]
+                : PERMISSIONS["STUDENT"],
+          });
         })
       );
-      return { status: httpStatus.OK, data: groups };
+
+      return {
+        status: httpStatus.OK,
+        data: {
+          groups,
+        },
+      };
     }
   } catch (error) {
     console.log(error);
@@ -51,7 +86,7 @@ const create = async (req) => {
     let teachers = [];
     if (checkOrg.organizationSize === "1") {
       const user = await User.findById(req.userId);
-      teachers = [user];
+      teachers = [user._id || user.id];
     }
     await Group.create({ ...data, users: [req.userId], teachers: teachers });
     return { status: httpStatus.OK, message: "Group created successfully" };

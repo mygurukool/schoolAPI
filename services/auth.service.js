@@ -11,11 +11,14 @@ const login = async (req) => {
       if (!findUser) {
         const newuser = await User.create({
           ...data,
-          loginTypes: [req.loginType],
+          loginTypes: [{ id: data.googleId, platformName: data.loginType }],
         });
+
         return {
           status: httpStatus.OK,
-          user: { ...newuser },
+          user: { ...newuser._doc, id: newuser._doc.googleId },
+          token: data.token,
+          loginType: "google",
           message: "Login Successs",
         };
       }
@@ -24,7 +27,7 @@ const login = async (req) => {
       });
       return {
         status: httpStatus.OK,
-        user: { ...updatedUser._doc, id: updatedUser.googleId },
+        user: { ...updatedUser._doc, id: data.googleId },
         loginType: "google",
         token: data.token,
         message: "Login Success",
@@ -82,6 +85,7 @@ const details = async (req) => {
           Authorization: `Bearer ${token}`,
         },
       });
+      const ourUser = await User.findOne({ googleId: user.data.googleId });
       return {
         status: httpStatus.OK,
         user: { ...user.data, imageUrl: user.data.picture },
