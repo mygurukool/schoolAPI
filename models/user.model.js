@@ -3,12 +3,10 @@ const { toJSON, paginate } = require("./plugins");
 
 const userSchema = mongoose.Schema(
   {
-    organizations: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: false,
-      },
-    ],
+    organizationId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: false,
+    },
     name: {
       type: String,
       required: false,

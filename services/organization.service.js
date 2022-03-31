@@ -23,9 +23,7 @@ const create = async (data) => {
       userId: user._id,
       organizationCountry: data.country,
     });
-    await User.findByIdAndUpdate(user._id, {
-      $push: { organizations: organization.id || organization._id },
-    });
+    await User.findByIdAndUpdate(user._id, { organizationId: organization.id || organization._id })
     return {
       status: httpStatus.OK,
       token: token,
