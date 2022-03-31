@@ -29,7 +29,7 @@ const sendInvitation = async (data) => {
             return false
         }))
         sgMail.setApiKey(config.email.sendgrid_api_key);
-        const invitationLink = `https://mougli.school/invitation/${data.type}/${createInvitation._id}`;
+        const invitationLink = `https://learn.mougli.school/invitation/${data.type}/${createInvitation._id}`;
         let mailDetails = {
             from: config.email.from,
             to: filteredPeoples,
