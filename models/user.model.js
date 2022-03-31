@@ -1,12 +1,14 @@
-const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const mongoose = require("mongoose");
+const { toJSON, paginate } = require("./plugins");
 
 const userSchema = mongoose.Schema(
   {
-    organizationId: {
-      type: mongoose.SchemaTypes.ObjectId,
-      required: false
-    },
+    organizations: [
+      {
+        type: mongoose.SchemaTypes.ObjectId,
+        required: false,
+      },
+    ],
     name: {
       type: String,
       required: false,
@@ -18,25 +20,30 @@ const userSchema = mongoose.Schema(
     email: {
       type: String,
       required: false,
-      unique: true
+      unique: true,
     },
     imageUrl: {
       type: String,
       required: false,
     },
-    googleId: {
-      type: String,
-      required: false,
-    },
-    loginType: {
-      type: String,
-      required: false,
-    },
+
+    loginTypes: [
+      {
+        id: {
+          type: String,
+          required: true,
+        },
+        platformName: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     password: {
       type: String,
       required: false,
       minlength: 8,
-      default: null
+      default: null,
     },
     country: {
       type: String,
@@ -57,17 +64,16 @@ const userSchema = mongoose.Schema(
     permissions: {
       type: Array,
       required: false,
-    }
+    },
   },
   {
     timestamps: true,
   }
 );
 
-
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

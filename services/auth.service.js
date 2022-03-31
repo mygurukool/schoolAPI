@@ -1,87 +1,121 @@
-const httpStatus = require('http-status');
-const { User, Organization, } = require('../models')
+const httpStatus = require("http-status");
+const { User, Organization } = require("../models");
 const jwt = require("jsonwebtoken");
-const { default: axios } = require('axios');
-
+const { default: axios } = require("axios");
 
 const login = async (req) => {
-    try {
-        const data = req.body
-        if (data.loginType === 'google') {
-            //    await axiosMiddleware({ url: userApis.getDetails(data.googleId) }, req)
-            const findUser = await User.findOne({ email: data.email });
-            if (!findUser) {
-                const newuser = await User.create(data)
-                return ({ status: httpStatus.OK, user: { ...newuser, id: newuser.googleId }, message: "Login Successs" });
-            }
-            const updatedUser = await User.findByIdAndUpdate(findUser._id, data, { new: true })
-            return ({ status: httpStatus.OK, user: { ...updatedUser._doc, id: updatedUser.googleId }, loginType: 'google', token: data.token, message: "Login Success" });
-        } else if (data.loginType === 'mygurukool') {
-            const user = await User.findOne({ email: data.email });
-            if (!user) {
-                return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Invalid email or password" });
-            }
-            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+  try {
+    const data = req.body;
+    if (data.loginType === "google") {
+      const findUser = await User.findOne({ email: data.email });
+      if (!findUser) {
+        const newuser = await User.create({
+          ...data,
+          loginTypes: [req.loginType],
+        });
+        return {
+          status: httpStatus.OK,
+          user: { ...newuser },
+          message: "Login Successs",
+        };
+      }
+      const updatedUser = await User.findByIdAndUpdate(findUser._id, data, {
+        new: true,
+      });
+      return {
+        status: httpStatus.OK,
+        user: { ...updatedUser._doc, id: updatedUser.googleId },
+        loginType: "google",
+        token: data.token,
+        message: "Login Success",
+      };
+    } else if (data.loginType === "mygurukool") {
+      const user = await User.findOne({ email: data.email });
+      if (!user) {
+        return {
+          status: httpStatus.INTERNAL_SERVER_ERROR,
+          message: "Invalid email or password",
+        };
+      }
+      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-            const organization = await Organization.findById(user.organizationId)
+      const organization = await Organization.findById(user.organizationId);
 
-            return ({ status: httpStatus.OK, user: user, organization: organization, loginType: 'mygurukool', token: token, message: "Login Success" });
-        }
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
+      return {
+        status: httpStatus.OK,
+        user: user,
+        loginType: "mygurukool",
+        token: token,
+        message: "Login Success",
+      };
     }
-
-}
+  } catch (error) {
+    console.log(error);
+    return { status: httpStatus.INTERNAL_SERVER_ERROR, message: error };
+  }
+};
 
 const socialLogin = async (data) => {
-    try {
-
-        return ({ status: httpStatus.OK, user: user, message: "User registered successfully", });
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to register user" });
-
-    }
-
-}
+  try {
+    return {
+      status: httpStatus.OK,
+      user: user,
+      message: "User registered successfully",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to register user",
+    };
+  }
+};
 
 const details = async (req) => {
-    try {
-        const token = req.header("Authorization");
-        const loginType = req.header("LoginType")
-        if (loginType === 'google') {
-            const user = await axios({
-                url: 'https://www.googleapis.com/userinfo/v2/me',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            return ({ status: httpStatus.OK, user: { ...user.data, imageUrl: user.data.picture }, loginType: 'google', message: "User details found successfully" });
+  try {
+    const token = req.header("Authorization");
+    const loginType = req.header("LoginType");
+    if (loginType === "google") {
+      const user = await axios({
+        url: "https://www.googleapis.com/userinfo/v2/me",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return {
+        status: httpStatus.OK,
+        user: { ...user.data, imageUrl: user.data.picture },
+        loginType: "google",
+        message: "User details found successfully",
+      };
+    } else {
+      const verified = jwt.verify(token, process.env.JWT_SECRET);
+      if (!verified) {
+        return res.status(401).send({ message: "Access denied" });
+      }
+      const userId = verified._id;
+      const user = await User.findOne({ _id: userId });
+      const organization = await Organization.findById(user.organizationId);
 
-        } else {
-            const verified = jwt.verify(token, process.env.JWT_SECRET);
-            if (!verified) {
-                return res.status(401).send({ message: "Access denied" });
-            }
-            const userId = verified._id;
-            const user = await User.findOne({ _id: userId });
-            const organization = await Organization.findById(user.organizationId)
-
-            if (!user) {
-                return ({ status: httpStatus.NOT_FOUND, message: "user does not exist" });
-            }
-            return ({ status: httpStatus.OK, user: user, loginType: 'mygurukool', organization: organization, message: "User details found successfully" });
-
-        }
-    } catch (error) {
-        console.log(error);
-        return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to get details" });
-
+      if (!user) {
+        return { status: httpStatus.NOT_FOUND, message: "user does not exist" };
+      }
+      return {
+        status: httpStatus.OK,
+        user: user,
+        loginType: "mygurukool",
+        organization: organization,
+        message: "User details found successfully",
+      };
     }
-
-
-}
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to get details",
+    };
+  }
+};
 
 // const forgotPassword = async (data) => {
 //     const user = await User.findOne({ email: data.email })
@@ -276,11 +310,12 @@ const details = async (req) => {
 //             return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error });
 //         }
 
-
 //     }
 // }
 
 module.exports = {
-    login, details, socialLogin,
-    // forgotPassword
-}
+  login,
+  details,
+  socialLogin,
+  // forgotPassword
+};
