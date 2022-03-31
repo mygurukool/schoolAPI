@@ -19,6 +19,8 @@ const userSchema = mongoose.Schema(
       type: String,
       required: false,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     imageUrl: {
       type: String,
