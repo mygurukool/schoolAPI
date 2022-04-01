@@ -24,6 +24,7 @@ const socket = (server) => {
   //   chatSocket(socket, io);
   // });
   io.on("connection", (socket) => {
+    console.log("socket", socket.handshake.query);
     const { path } = socket.handshake.query;
     if (path === "whiteboard") {
       whiteboardsocket(socket, io);
