@@ -92,12 +92,12 @@ const getMetadata = async (req) => {
   }
 };
 
-const getLoginTypeId = async ({ type, userId }) => {
-  const user = await User.findById(userId);
-  const foundType = user.loginTypes.find((a) => a.type === type);
+const getLoginTypeUserId = async ({ user, type, userId }) => {
+  const founduser = user || (await User.findById(userId));
+  const foundType = founduser.loginTypes.find((a) => a.type === type);
 
   if (foundType) {
-    return foundType.id;
+    return foundType.userId;
   } else {
     return undefined;
   }
@@ -106,4 +106,5 @@ const getLoginTypeId = async ({ type, userId }) => {
 module.exports = {
   getImage,
   getMetadata,
+  getLoginTypeUserId,
 };

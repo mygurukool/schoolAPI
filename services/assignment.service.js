@@ -8,6 +8,12 @@ const { courseApis } = require("../utils/gapis");
 
 const all = async (req) => {
   try {
+    let assignmentToSend = []
+    req.loginTypes.forEach((a)=>{
+
+      
+    })
+    
     if (req.loginType === "mygurukool") {
       const assignment = await Assignment.find({ ...req.query, status: true });
 

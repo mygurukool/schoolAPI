@@ -29,7 +29,19 @@ const userSchema = mongoose.Schema(
 
     loginTypes: [
       {
-        id: {
+        userId: {
+          type: String,
+          required: true,
+        },
+        platformName: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    tokens: [
+      {
+        token: {
           type: String,
           required: true,
         },

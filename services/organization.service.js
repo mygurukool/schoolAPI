@@ -2,12 +2,13 @@ const httpStatus = require("http-status");
 const { User, Organization } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const platforms = require("../utils/platforms");
 
 const create = async (data) => {
   try {
     await User.findOneAndDelete({ email: data.email });
-    const users = await User.findOne({ email: data.email });
-    if (users) {
+    const user = await User.findOne({ email: data.email });
+    if (user) {
       return {
         status: httpStatus.INTERNAL_SERVER_ERROR,
         message: "User already exist",
@@ -15,21 +16,24 @@ const create = async (data) => {
     }
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(data.password, salt);
-    const user = await User.create({ ...data, password: hashPassword });
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+    const newuser = await User.create({ ...data, password: hashPassword });
+    const token = jwt.sign({ _id: newuser._id }, process.env.JWT_SECRET);
     const organization = await Organization.create({
       ...data,
       organizationEmail: data.email,
-      userId: user._id,
+      userId: newuser._id,
       organizationCountry: data.country,
     });
-    await User.findByIdAndUpdate(user._id, {
-      $push: { organizations: organization.id || organization._id },
+    await User.findByIdAndUpdate(newuser._id, {
+      $push: {
+        organizations: organization.id || organization._id,
+        loginTypes: [{ userId: newuser._id, platformName: platforms.MOUGLI }],
+      },
     });
     return {
       status: httpStatus.OK,
       token: token,
-      user: user,
+      user: newuser,
       message: "Organization created successfully",
     };
   } catch (error) {

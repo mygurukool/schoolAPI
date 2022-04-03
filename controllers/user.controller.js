@@ -7,7 +7,7 @@ const getTeachers = catchAsync(async (req, res) => {
     courseId: req.query.courseId,
     groupId: req.query.groupId,
     returnCurrentUser: false,
-    loginType: req.loginType,
+    loginTypes: req.loginTypes,
     request: req,
   });
   return res.status(result.status).send(result);
@@ -19,7 +19,8 @@ const getStudents = catchAsync(async (req, res) => {
     courseId: req.query.courseId,
     groupId: req.query.groupId,
     returnCurrentUser: false,
-    loginType: req.loginType,
+    loginTypes: req.loginTypes,
+
     request: req,
   });
   return res.status(result.status).send(result);
