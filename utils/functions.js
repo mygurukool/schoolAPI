@@ -12,7 +12,6 @@ const findUserInArray = ({ data = [], userId }) => {
 
 const findGoogleToken = async ({ tokens }) => {
   const found = tokens.filter((d) => d.platformName === platforms.GOOGLE);
-  console.log("found", found);
   if (found.length > 0) {
     return found[0].token;
   } else {

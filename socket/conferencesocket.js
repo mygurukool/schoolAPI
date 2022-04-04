@@ -4,9 +4,9 @@ const conferencesocket = (socket, io) => {
   const { courseId, userId } = data;
 
   socket.join(courseId);
-  socket.on("INITIALIZE_CONFERENCE", async () => {
-    console.log("set conf req");
-    socket.broadcast.to(data.courseId).emit("SET_CONFERENCE", data);
+  socket.on("INITIALIZE_CONFERENCE", async (request) => {
+    // console.log("set conf req");
+    socket.broadcast.to(courseId).emit("SET_CONFERENCE", request);
   });
 
   return socket;

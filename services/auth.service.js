@@ -7,10 +7,10 @@ const login = async (req) => {
   try {
     const data = req.body;
     const findUser = await User.findOne({ email: data.email });
-    console.log("data", data);
+    // console.log("data", data);
 
     if (data.loginType === "google") {
-      console.log("login if", data.loginType);
+      // console.log("login if", data.loginType);
       if (!findUser) {
         const newuser = await User.create({
           ...data,
@@ -49,6 +49,7 @@ const login = async (req) => {
             },
           ],
         });
+        console.log('updatedUser',updatedUser)
         return {
           status: httpStatus.OK,
           user: updatedUser,

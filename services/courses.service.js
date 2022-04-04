@@ -8,6 +8,8 @@ const { getCourseIcons } = require("../utils/functions");
 const { ObjectID } = require("mongodb");
 
 const all = async (req) => {
+  console.log("req", req.query);
+  const groupName = req.query.groupName;
   try {
     let courses = [];
     console.time("startall");
@@ -42,10 +44,13 @@ const all = async (req) => {
             { url: courseApis.getCourses() },
             req
           );
+          const filterdCourses = groupName
+            ? gcourses.courses.filter((c) => c.section === groupName)
+            : gcourses.courses || [];
           if (gcourses) {
             // console.log("courses", gcourses);
             await Promise.all(
-              gcourses.courses.map(async (c) => {
+              filterdCourses.map(async (c) => {
                 courses.push({
                   ...c,
                   courseName: c.name,

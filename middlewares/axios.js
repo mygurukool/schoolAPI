@@ -4,10 +4,10 @@ const { findGoogleToken } = require("../utils/functions");
 
 const axiosMiddleware = async (options, req) => {
   const tokens = req.header("authorization");
-  console.log("tokens", tokens);
+  // console.log("tokens", tokens);
 
   const googleToken = await findGoogleToken({ tokens: JSON.parse(tokens) });
-  console.log("googleToken", googleToken);
+  // console.log("googleToken", googleToken);
 
   if (googleToken) {
     const response = await axios({
