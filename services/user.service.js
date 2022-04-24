@@ -3,6 +3,7 @@ const { ObjectId } = require("mongodb");
 const { axiosMiddleware } = require("../middlewares/axios");
 const { Group, User, UploadFile } = require("../models");
 const { courseApis } = require("../utils/gapis");
+const { ROLES } = require("../utils/permissions");
 const platforms = require("../utils/platforms");
 
 const filterOutCurrentUser = ({ userId, data }) => {
@@ -23,15 +24,33 @@ const getTeachers = async ({
         // console.log("req", lt);
 
         if (lt.platformName === platforms.MOUGLI) {
-          //mg teachers
-          const group = await Group.findById(groupId);
-          if (group) {
-            const groupTeachers = await Promise.all(
-              group.teachers.map(async (t) => {
-                const user = await User.findById(t.id || t._id);
-                teachers.push(user);
+          const userTeachers = await User.find({
+            "groups.groupId": groupId,
+            "groups.role": ROLES.teacher,
+          });
+          if (userTeachers) {
+            await Promise.all(
+              userTeachers.map(async (t) => {
+                teachers.push(t);
               })
             );
+          }
+          // mg teachers
+          const group = await Group.findById(groupId);
+          if (group) {
+            const foundUsers = await User.find({
+              "groups.groupId": groupId,
+              "groups.role": ROLES.teacher,
+            });
+
+            console.log("foundUsers", foundUsers);
+
+            // const groupTeachers = await Promise.all(
+            //   group.teachers.map(async (t) => {
+            //     const user = await User.findById(t.id || t._id);
+            //     teachers.push(user);
+            //   })
+            // );
           }
         }
         if (lt.platformName === platforms.GOOGLE) {
@@ -148,6 +167,8 @@ const remove = async (data) => {
 const uploadFile = async (req) => {
   try {
     const userId = req.userId;
+
+    console.log("uploadFile", userId, req.body, req.body);
     req.body.fileId =
       req.body.fileId !== "undefined" ? req.body.fileId : undefined;
     const created = await UploadFile.create({

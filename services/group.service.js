@@ -4,9 +4,13 @@ const { axiosMiddleware } = require("../middlewares/axios");
 const { Group, Organization, User } = require("../models");
 const { findUserInArray } = require("../utils/functions");
 const { courseApis } = require("../utils/gapis");
-const PERMISSIONS = require("../utils/permissions");
+const { PERMISSIONS, ROLES } = require("../utils/permissions");
 const platforms = require("../utils/platforms");
 const { getTeachers } = require("./user.service");
+
+const getPermissions = async (role) => {
+  return await PERMISSIONS[role];
+};
 
 const all = async (req) => {
   try {
@@ -14,7 +18,8 @@ const all = async (req) => {
 
     await Promise.all(
       req.loginTypes.map(async (lt) => {
-        // console.log("req", lt);
+        // console.log("req", req);
+        // console.log("lt", lt);
 
         if (lt.platformName === platforms.MOUGLI) {
           const allgroups = await Group.find({ users: { $in: [req.userId] } });
@@ -22,20 +27,27 @@ const all = async (req) => {
             await Promise.all(
               allgroups.map(async (c) => {
                 const org = await Organization.findById(c.organizationId);
-                const isTeacher = findUserInArray({
-                  data: c.teachers,
-                  userId: req.userId,
+                const isTeacher = await User.findOne({
+                  "groups.groupId": c._id,
+                  "groups.role": ROLES.teacher,
                 });
-                console.log("isTeacher", isTeacher, c.teachers, req.userId);
-                groups.push({
-                  ...c._doc,
-                  organizationName: org.organizationName,
-                  organizationId: org._id || org.id,
+                if (isTeacher) {
+                  groups.push({
+                    ...c._doc,
+                    organizationName: org.organizationName,
+                    organizationId: org._id || org.id,
 
-                  permissions: isTeacher
-                    ? PERMISSIONS["TEACHER"]
-                    : PERMISSIONS["STUDENT"],
-                });
+                    permissions: PERMISSIONS[ROLES.teacher],
+                  });
+                } else {
+                  groups.push({
+                    ...c._doc,
+                    organizationName: org.organizationName,
+                    organizationId: org._id || org.id,
+
+                    permissions: PERMISSIONS[ROLES.student],
+                  });
+                }
               })
             );
           }
@@ -55,7 +67,7 @@ const all = async (req) => {
                 request: req,
               });
 
-              const isTeacher = teachers.data.some((t) => t.id === req.userId);
+              const isTeacher = teachers.data.some((t) => t.id === lt.userId);
 
               groups.push({
                 groupName: c.section,
@@ -70,10 +82,25 @@ const all = async (req) => {
         }
       })
     );
+    const filteredGroups = groups.map((g) => {
+      if (g.platformName === platforms.GOOGLE) {
+        const existing = groups.find((a) => a.groupName === g.groupName);
+        console.log(existing);
+
+        if (existing && existing._id) {
+          return existing;
+        } else {
+          return g;
+        }
+      } else {
+        return g;
+      }
+    });
+
     return {
       status: httpStatus.OK,
       data: {
-        groups,
+        groups: [...new Set(filteredGroups)],
       },
     };
   } catch (error) {
@@ -86,6 +113,7 @@ const all = async (req) => {
 };
 
 const create = async (req) => {
+  console.log("req", req.body);
   try {
     const data = req.body;
     const checkIfExist = await Group.findOne(data);
@@ -96,17 +124,44 @@ const create = async (req) => {
       };
     }
     const checkOrg = await Organization.findOne({ userId: req.userId });
-    let teachers = [];
-    if (checkOrg.organizationSize === "1") {
-      const user = await User.findById(req.userId);
-      teachers = [user._id || user.id];
-    }
-    await Group.create({
+    console.log("checkOrg", checkOrg);
+    // let teachers = [];
+    // if (checkOrg.organizationSize === "1") {
+    //   const user = await User.findById(req.userId);
+    //   teachers = [user._id || user.id];
+    // }
+
+    console.log("grop create data", data);
+    const createdGroup = await Group.create({
       ...data,
       users: [req.userId],
-      teachers: teachers,
       organizationId: checkOrg._id,
     });
+
+    if (!createdGroup) {
+      return {
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to create group",
+      };
+    }
+    const updatedUser = await User.findByIdAndUpdate(req.userId, {
+      $push: {
+        groups: [
+          {
+            groupId: createdGroup?._id || createdGroup?._id,
+            role: ROLES.teacher,
+          },
+        ],
+      },
+    });
+
+    if (!updatedUser) {
+      return {
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to create group",
+      };
+    }
+
     return { status: httpStatus.OK, message: "Group created successfully" };
   } catch (error) {
     console.log(error);

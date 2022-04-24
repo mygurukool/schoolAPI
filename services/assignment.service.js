@@ -2,75 +2,189 @@ const httpStatus = require("http-status");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
 const { axiosMiddleware } = require("../middlewares/axios");
-const { Assignment, UploadFile, User, StudentPoint } = require("../models");
+const {
+  Assignment,
+  UploadFile,
+  User,
+  StudentPoint,
+  Group,
+  Course,
+} = require("../models");
 const { DATETIMEFORMAT } = require("../utils/constants");
 const { courseApis } = require("../utils/gapis");
+const platforms = require("../utils/platforms");
+const { PERMISSIONS, ROLES } = require("../utils/permissions");
 
 const all = async (req) => {
   try {
-    let assignmentToSend = []
-    req.loginTypes.forEach((a)=>{
+    let assignmentToSend = [];
+    const courseId = req.query.courseId;
+    console.log("assignments", req.query);
 
-      
-    })
-    
-    if (req.loginType === "mygurukool") {
-      const assignment = await Assignment.find({ ...req.query, status: true });
+    await Promise.all(
+      req.loginTypes.map(async (lt) => {
+        console.time("startloop");
 
-      const newAssignment = await Promise.all(
-        assignment.map(async (a) => {
-          // console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
-          let uploadExercises = [];
-          if (a.uploadExercises.length > 0) {
-            uploadExercises = await Promise.all(
-              a.uploadExercises.map(async (exercise) => {
+        if (lt.platformName === platforms.MOUGLI) {
+          const assignment = await Assignment.find({
+            courseId: courseId,
+            status: true,
+          });
+
+          //mougli
+
+          const newAssignment = await Promise.all(
+            assignment.map(async (a) => {
+              // console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
+              let uploadExercises = [];
+              if (a.uploadExercises.length > 0) {
+                uploadExercises = await Promise.all(
+                  a.uploadExercises.map(async (exercise) => {
+                    const userFiles = await UploadFile.find({
+                      assignmentId: a._id || a.id,
+                      studentId: req.userId,
+                      fileId: exercise.id || exercise._id,
+                    });
+
+                    return { ...exercise, files: userFiles };
+                  })
+                );
+              } else {
                 const userFiles = await UploadFile.find({
                   assignmentId: ObjectId(a._id) || ObjectId(a.id),
                   studentId: req.userId,
-                  fileId: exercise.id || exercise._id,
                 });
 
-                return { ...exercise, files: userFiles };
+                uploadExercises = [{ files: userFiles }];
+              }
+              assignmentToSend.push({
+                ...a._doc,
+                uploadExercises: uploadExercises,
+                dueDate: moment(a.dueDate).format(DATETIMEFORMAT),
+              });
+            })
+          );
+        }
+        if (lt.platformName === platforms.GOOGLE) {
+          //google
+
+          try {
+            const { courseId } = req.query;
+            const assignments = await axiosMiddleware(
+              { url: courseApis.getAssignments(courseId) },
+              req
+            );
+
+            await Promise.all(
+              assignments.courseWork.map(async (a) => {
+                let uploadExercises = a.materials
+                  ? a.materials.filter((d) => d.driveFile)
+                  : [];
+
+                // console.log(
+                //   "uploadExercises",
+                //   a.materials.filter((d) => d.driveFile)
+                // );
+                uploadExercises = await Promise.all(
+                  uploadExercises.map(async (exercise) => {
+                    const driveFile = exercise?.driveFile?.driveFile;
+
+                    const userFiles = await UploadFile.find({
+                      assignmentId: a._id || a.id,
+                      fileId: driveFile.id || driveFile._id,
+                    });
+                    // console.log("exercise", exercise, userFiles);
+
+                    return {
+                      ...driveFile,
+                      ogUrl: driveFile.alternateLink,
+                      files: userFiles,
+                      platformName: platforms.GOOGLE,
+                    };
+                  })
+                );
+
+                console.log("uploadExercises"), uploadExercises;
+                assignmentToSend.push({
+                  ...a,
+                  assignmentTitle: a.title,
+                  instructions: a.description,
+                  dueDate: a.dueDate
+                    ? `${a.dueDate?.day}/${a.dueDate?.month}/${a.dueDate?.year} ${a.dueTime.hours}:${a.dueTime.minutes}  `
+                    : "",
+                  platformName: platforms.GOOGLE,
+                  materials: undefined,
+                  uploadExercises: uploadExercises,
+                  platformName: platforms.GOOGLE,
+                });
               })
             );
-          } else {
-            const userFiles = await UploadFile.find({
-              assignmentId: ObjectId(a._id) || ObjectId(a.id),
-              studentId: req.userId,
-            });
-
-            uploadExercises = [{ files: userFiles }];
+          } catch (error) {
+            console.log("error", error);
           }
-          return {
-            ...a._doc,
-            uploadExercises: uploadExercises,
-            dueDate: moment(a.dueDate).format(DATETIMEFORMAT),
-          };
-        })
-      );
-      return { status: httpStatus.OK, data: { assignments: newAssignment } };
-    } else if (req.loginType === "google") {
-      const { courseId } = req.query;
-      const assignments = await axiosMiddleware(
-        { url: courseApis.getAssignments(courseId) },
-        req
-      );
+        }
+        console.timeEnd("startloop");
+      })
+    );
 
-      const newAssignment = await Promise.all(
-        assignments.courseWork.map((a) => {
-          return {
-            ...a,
-            assignmentTitle: a.title,
-            instructions: a.description,
-            dueDate: a.dueDate
-              ? `${a.dueDate?.day}/${a.dueDate?.month}/${a.dueDate?.year} ${a.dueTime.hours}:${a.dueTime.minutes}  `
-              : "",
-          };
-        })
-      );
-      // console.log('courseTeachers', students);
-      return { status: httpStatus.OK, data: { assignments: newAssignment } };
-    }
+    // if (req.loginType === "mygurukool") {
+    //   const assignment = await Assignment.find({ ...req.query, status: true });
+
+    //   const newAssignment = await Promise.all(
+    //     assignment.map(async (a) => {
+    //       // console.log('userFiles', { assignmentId: ObjectId(a._id) || ObjectId(a.id), studentId: req.userId, });
+    //       let uploadExercises = [];
+    //       if (a.uploadExercises.length > 0) {
+    //         uploadExercises = await Promise.all(
+    //           a.uploadExercises.map(async (exercise) => {
+    //             const userFiles = await UploadFile.find({
+    //               assignmentId: ObjectId(a._id) || ObjectId(a.id),
+    //               studentId: req.userId,
+    //               fileId: exercise.id || exercise._id,
+    //             });
+
+    //             return { ...exercise, files: userFiles };
+    //           })
+    //         );
+    //       } else {
+    //         const userFiles = await UploadFile.find({
+    //           assignmentId: ObjectId(a._id) || ObjectId(a.id),
+    //           studentId: req.userId,
+    //         });
+
+    //         uploadExercises = [{ files: userFiles }];
+    //       }
+    //       return {
+    //         ...a._doc,
+    //         uploadExercises: uploadExercises,
+    //         dueDate: moment(a.dueDate).format(DATETIMEFORMAT),
+    //       };
+    //     })
+    //   );
+    //   return { status: httpStatus.OK, data: { assignments: newAssignment } };
+    // } else if (req.loginType === "google") {
+    // const { courseId } = req.query;
+    // const assignments = await axiosMiddleware(
+    //   { url: courseApis.getAssignments(courseId) },
+    //   req
+    // );
+
+    // const newAssignment = await Promise.all(
+    //   assignments.courseWork.map((a) => {
+    //     return {
+    //       ...a,
+    //       assignmentTitle: a.title,
+    //       instructions: a.description,
+    //       dueDate: a.dueDate
+    //         ? `${a.dueDate?.day}/${a.dueDate?.month}/${a.dueDate?.year} ${a.dueTime.hours}:${a.dueTime.minutes}  `
+    //         : "",
+    //     };
+    //   })
+    // );
+    //   // console.log('courseTeachers', students);
+    //   return { status: httpStatus.OK, data: { assignments: newAssignment } };
+    // }
+    return { status: httpStatus.OK, data: { assignments: assignmentToSend } };
   } catch (error) {
     console.log(error);
     return { status: httpStatus.INTERNAL_SERVER_ERROR, message: error };
@@ -79,7 +193,7 @@ const all = async (req) => {
 
 const create = async (req) => {
   try {
-    console.log("req.body", req.body);
+    const data = req.body;
     const audioVideo = req.body.audioVideo
       ? JSON.parse(req.body.audioVideo)
       : [];
@@ -96,8 +210,41 @@ const create = async (req) => {
         return u;
       })
     );
-
-    if (req.loginType === "mygurukool") {
+    if (data.gCourseId && data.groupName) {
+      const createdGroup = await Group.create({
+        groupName: data.groupName,
+        users: [req.userId],
+        userId: req.userId,
+        organizationId: data.organizationId,
+      });
+      const updatedUser = await User.findByIdAndUpdate(req.userId, {
+        $push: {
+          groups: [
+            {
+              groupId: createdGroup._id,
+              role: ROLES.teacher,
+            },
+          ],
+        },
+      });
+      const createdCourse = await Course.create({
+        groupId: createdGroup._id,
+        courseName: data.courseName,
+        googleId: data.gCourseId,
+      });
+      await Assignment.create({
+        ...req.body,
+        courseId: createdCourse._id,
+        students: students,
+        userId: req.userId,
+        uploadExercises: [...req.files, ...newExercise],
+        audioVideo: audioVideo,
+      });
+      return {
+        status: httpStatus.OK,
+        message: "Assignment created successfully",
+      };
+    } else {
       await Assignment.create({
         ...req.body,
         students: students,

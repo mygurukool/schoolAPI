@@ -135,4 +135,4 @@ const PERMISSIONS = {
   [ROLES.organizationOwner]: [...teacherScopes],
 };
 
-module.exports = PERMISSIONS;
+module.exports = { PERMISSIONS, ROLES };

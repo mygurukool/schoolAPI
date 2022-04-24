@@ -49,7 +49,7 @@ const login = async (req) => {
             },
           ],
         });
-        console.log('updatedUser',updatedUser)
+        // console.log('updatedUser',updatedUser)
         return {
           status: httpStatus.OK,
           user: updatedUser,
@@ -96,9 +96,9 @@ const details = async (req) => {
   try {
     const tokens = req.header("authorization");
     const userId = req.header("userId");
-    const user = await User.findOne({
-      "loginTypes.userId": userId,
-    });
+    const user = await User.findById(userId);
+
+    console.log("details", userId, user);
 
     // console.log("tokens", req.headers, tokens);
     if (!user) {

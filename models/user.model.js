@@ -26,7 +26,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: false,
     },
-
+    groups: {
+      type: Array,
+      required: false,
+    },
     loginTypes: [
       {
         userId: {

@@ -1,23 +1,21 @@
 const httpStatus = require("http-status");
 const { axiosMiddleware } = require("../middlewares/axios");
-const { Course } = require("../models");
+const { Course, Group, User } = require("../models");
 const { courseApis } = require("../utils/gapis");
 const fs = require("fs");
 const platforms = require("../utils/platforms");
+const { PERMISSIONS, ROLES } = require("../utils/permissions");
+
 const { getCourseIcons } = require("../utils/functions");
-const { ObjectID } = require("mongodb");
+// const { ObjectID } = require("mongodb");
 
 const all = async (req) => {
-  console.log("req", req.query);
   const groupName = req.query.groupName;
   try {
     let courses = [];
-    console.time("startall");
 
     await Promise.all(
       req.loginTypes.map(async (lt) => {
-        console.time("startloop");
-
         if (lt.platformName === platforms.MOUGLI) {
           //mougli
 
@@ -40,32 +38,33 @@ const all = async (req) => {
         }
         if (lt.platformName === platforms.GOOGLE) {
           //google
-          const gcourses = await axiosMiddleware(
-            { url: courseApis.getCourses() },
-            req
-          );
-          const filterdCourses = groupName
-            ? gcourses.courses.filter((c) => c.section === groupName)
-            : gcourses.courses || [];
-          if (gcourses) {
-            // console.log("courses", gcourses);
-            await Promise.all(
-              filterdCourses.map(async (c) => {
-                courses.push({
-                  ...c,
-                  courseName: c.name,
-                  courseImage: await getCourseIcons(c.name),
-                });
-              })
+          try {
+            const gcourses = await axiosMiddleware(
+              { url: courseApis.getCourses() },
+              req
             );
+            // console.log("gcourses", gcourses);
+            const filterdCourses = groupName
+              ? gcourses.courses.filter((c) => c.section === groupName)
+              : gcourses.courses || [];
+            if (gcourses) {
+              await Promise.all(
+                filterdCourses.map(async (c) => {
+                  courses.push({
+                    ...c,
+                    courseName: c.name,
+                    courseImage: await getCourseIcons(c.name),
+                    platformName: platforms.GOOGLE,
+                  });
+                })
+              );
+            }
+          } catch (error) {
+            console.log("error", error);
           }
         }
-        console.timeEnd("startloop");
       })
     );
-
-    console.timeEnd("startall");
-    console.log("courses", courses);
 
     return { status: httpStatus.OK, data: courses };
   } catch (error) {
@@ -75,11 +74,33 @@ const all = async (req) => {
 };
 
 const create = async (req) => {
+  console.log("req", req.body);
+
   try {
     const data = req.body;
     await Promise.all(
       data.groupId.map(async (g) => {
-        await Course.create({ ...data, groupId: g });
+        if (g === null && data.currentGroup) {
+          const createdGroup = await Group.create({
+            ...data.currentGroup,
+            users: [req.userId],
+            userId: req.userId,
+            organizationId: data.organizationId,
+          });
+          const updatedUser = await User.findByIdAndUpdate(req.userId, {
+            $push: {
+              groups: [
+                {
+                  groupId: createdGroup._id,
+                  role: ROLES.teacher,
+                },
+              ],
+            },
+          });
+          await Course.create({ ...data, groupId: createdGroup._id });
+        } else {
+          await Course.create({ ...data, groupId: g });
+        }
       })
     );
     return { status: httpStatus.OK, message: "Course created successfully" };

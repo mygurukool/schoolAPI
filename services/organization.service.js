@@ -1,11 +1,13 @@
 const httpStatus = require("http-status");
-const { User, Organization } = require("../models");
+const { User, Organization, Group } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const platforms = require("../utils/platforms");
 
 const create = async (data) => {
   try {
+    // console.log("data", data);
+
     // await User.findOneAndDelete({ email: data.email });
     const user = await User.findOne({ email: data.email });
     const salt = await bcrypt.genSalt(10);
@@ -37,10 +39,18 @@ const create = async (data) => {
             organizations: organization.id || organization._id,
           },
         });
+        // if (data.currentGroup) {
+        //   const createdGroup = await Group.create({
+        //     ...data.currentGroup,
+        //     users: [newuser._id.toString()],
+        //     organizationId: organization._id,
+        //   });
+        // }
         return {
           status: httpStatus.OK,
           token: token,
           user: newuser,
+          organization: organization,
           message: "Organization created successfully",
         };
       }
@@ -64,11 +74,21 @@ const create = async (data) => {
           },
         },
       });
+      // console.log("updateUser", updatedUser);
+      if (data.currentGroup) {
+        const createdGroup = await Group.create({
+          ...data.currentGroup,
+          users: [updatedUser._id.toString()],
+          userId: updatedUser._id,
+          organizationId: organization._id,
+        });
+      }
       if (updatedUser) {
         return {
           status: httpStatus.OK,
           token: token,
           user: updatedUser,
+          organization: organization,
           message: "Organization created successfully",
         };
       }

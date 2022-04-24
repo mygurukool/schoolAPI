@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const { toJSON, paginate } = require("./plugins");
 
 const assignmentSchema = mongoose.Schema({
-  groupId: {
-    type: mongoose.SchemaTypes.ObjectId,
-    ref: "groups",
-    required: true,
-  },
+  // groupId: {
+  //   type: mongoose.SchemaTypes.ObjectId,
+  //   ref: "groups",
+  //   required: false,
+  // },
   courseId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "courses",

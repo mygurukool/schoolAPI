@@ -18,6 +18,10 @@ const courseSchema = mongoose.Schema({
     type: String,
     required: false,
   },
+  googleId: {
+    type: String,
+    required: false,
+  },
 });
 
 courseSchema.plugin(toJSON);
