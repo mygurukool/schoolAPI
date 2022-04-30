@@ -1,6 +1,5 @@
 const httpStatus = require("http-status");
-const { Token } = require("../models");
-
+const { Token, User } = require("../models");
 
 const admin = require("firebase-admin");
 
@@ -11,19 +10,18 @@ const config = require("../config/config");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: config.mongoose.url
+  databaseURL: config.mongoose.url,
 });
-
 
 const register = async (req) => {
   try {
-    const checkExist = await Token.find({ token: req.body.token })
+    const checkExist = await Token.find({ token: req.body.token });
     // console.log('checkExist', checkExist);
     if (checkExist.length > 0) {
       return { status: httpStatus.OK };
     }
-    await Token.create({ ...req.body, userId: req.userId })
-    return { status: httpStatus.OK, message: 'Token registered successfully' };
+    await Token.create({ ...req.body, userId: req.userId });
+    return { status: httpStatus.OK, message: "Token registered successfully" };
   } catch (error) {
     console.log(error);
     return { status: httpStatus.INTERNAL_SERVER_ERROR, message: error };
@@ -32,16 +30,18 @@ const register = async (req) => {
 
 const sendNotifications = async (data) => {
   try {
-    const { title, body, } = data
-    let tokens = []
+    const { title, body } = data;
+    let tokens = [];
     // console.log('data', data);
-    await Promise.all(data.users.map(async u => {
-      const alltokens = await Token.findOne({ userId: u })
-      console.log('alltokens', alltokens);
-      if (alltokens) {
-        tokens.push(alltokens.token)
-      }
-    }))
+    await Promise.all(
+      data.users.map(async (u) => {
+        const alltokens = await Token.findOne({ userId: u });
+        console.log("alltokens", alltokens);
+        if (alltokens) {
+          tokens.push(alltokens.token);
+        }
+      })
+    );
 
     const send = await admin.messaging().sendMulticast({
       tokens,
@@ -49,22 +49,51 @@ const sendNotifications = async (data) => {
         title,
         body,
       },
-      data: data.data
+      data: data.data,
     });
-    console.log('send', send);
+    console.log("send", send);
     if (send.responses[0].success) {
-      return ({ status: httpStatus.OK, message: 'Notification sent successfully' });
+      return {
+        status: httpStatus.OK,
+        message: "Notification sent successfully",
+      };
     } else {
-      return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: send.responses[0].error || "Failed to send notification" });
+      return {
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: send.responses[0].error || "Failed to send notification",
+      };
     }
   } catch (error) {
     console.log(error);
-    return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to send notification" });
-
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to send notification",
+    };
   }
+};
 
-}
+const sendpermissionmail = async (data) => {
+  try {
+    // console.log("sendpermissionmail", data);
+    const teachers = await User.find({
+      "groups.groupId": c._id,
+      "groups.role": ROLES.teacher,
+    });
+    // const checkExist = await Token.find({ token: req.body.token });
+    // // console.log('checkExist', checkExist);
+    // if (checkExist.length > 0) {
+    //   return { status: httpStatus.OK };
+    // }
+    // await Token.create({ ...req.body, userId: req.userId });
+    return { status: httpStatus.OK, message: "Token registered successfully" };
+  } catch (error) {
+    console.log(error);
+    return { status: httpStatus.INTERNAL_SERVER_ERROR, message: error };
+  }
+};
 
 module.exports = {
-  register, sendNotifications
+  register,
+  sendNotifications,
+  sendpermissionmail,
 };

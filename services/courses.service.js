@@ -23,6 +23,7 @@ const all = async (req) => {
             const foundCourses = await Course.find({
               groupId: req.query.groupId,
             });
+            console.log("foundCourses", foundCourses);
 
             if (foundCourses) {
               await Promise.all(
@@ -43,11 +44,10 @@ const all = async (req) => {
               { url: courseApis.getCourses() },
               req
             );
-            // console.log("gcourses", gcourses);
-            const filterdCourses = groupName
-              ? gcourses.courses.filter((c) => c.section === groupName)
-              : gcourses.courses || [];
             if (gcourses) {
+              const filterdCourses = groupName
+                ? gcourses.courses.filter((c) => c.section === groupName)
+                : gcourses.courses || [];
               await Promise.all(
                 filterdCourses.map(async (c) => {
                   courses.push({
@@ -59,6 +59,7 @@ const all = async (req) => {
                 })
               );
             }
+            console.log("gcourses", req);
           } catch (error) {
             console.log("error", error);
           }

@@ -82,25 +82,31 @@ const all = async (req) => {
         }
       })
     );
-    const filteredGroups = groups.map((g) => {
-      if (g.platformName === platforms.GOOGLE) {
-        const existing = groups.find((a) => a.groupName === g.groupName);
-        console.log(existing);
-
-        if (existing && existing._id) {
-          return existing;
+    const filteredGroups = [];
+    await Promise.all(
+      groups.map((g) => {
+        if (g.platformName === platforms.GOOGLE) {
+          const existing = filteredGroups.findIndex(
+            (a) => a.groupName === g.groupName
+          );
+          if (existing > -1) {
+            filteredGroups[existing] = {
+              ...filteredGroups[existing],
+              ...g,
+            };
+          } else {
+            filteredGroups.push(g);
+          }
         } else {
-          return g;
+          return filteredGroups.push(g);
         }
-      } else {
-        return g;
-      }
-    });
+      })
+    );
 
     return {
       status: httpStatus.OK,
       data: {
-        groups: [...new Set(filteredGroups)],
+        groups: filteredGroups,
       },
     };
   } catch (error) {

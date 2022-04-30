@@ -76,7 +76,7 @@ const all = async (req) => {
             );
 
             await Promise.all(
-              assignments.courseWork.map(async (a) => {
+              assignments?.courseWork?.map(async (a) => {
                 let uploadExercises = a.materials
                   ? a.materials.filter((d) => d.driveFile)
                   : [];

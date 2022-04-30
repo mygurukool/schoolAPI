@@ -7,7 +7,7 @@ const axiosMiddleware = async (options, req) => {
   // console.log("tokens", tokens);
 
   const googleToken = await findGoogleToken({ tokens: JSON.parse(tokens) });
-  // console.log("googleToken", googleToken);
+  console.log("googleToken", googleToken);
 
   if (googleToken) {
     const response = await axios({

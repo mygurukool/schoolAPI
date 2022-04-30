@@ -39,13 +39,7 @@ const create = async (data) => {
             organizations: organization.id || organization._id,
           },
         });
-        // if (data.currentGroup) {
-        //   const createdGroup = await Group.create({
-        //     ...data.currentGroup,
-        //     users: [newuser._id.toString()],
-        //     organizationId: organization._id,
-        //   });
-        // }
+
         return {
           status: httpStatus.OK,
           token: token,
@@ -102,6 +96,53 @@ const create = async (data) => {
   }
 };
 
+const changeUploadPermission = async (data) => {
+  console.log("changeUploadPermission", data);
+  try {
+    await Organization.findByIdAndUpdate(data.organizationId, {
+      uploadPermissionInfo: data,
+    });
+    return {
+      status: httpStatus.OK,
+      message: "Permission changed successfully",
+      data: {
+        permission: data.hasPermission,
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to change permission",
+    };
+  }
+};
+
+const checkUploadPermission = async (data) => {
+  try {
+    const org = await Organization.findById(data.organizationId);
+    let permission = false;
+    if (org) {
+      permission = org?.uploadPermissionInfo.hasPermission;
+    }
+
+    return {
+      status: httpStatus.OK,
+      message: "Permission changed successfully",
+      data: {
+        permission: permission,
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      message: "Failed to change permission",
+    };
+  }
+};
 module.exports = {
   create,
+  changeUploadPermission,
+  checkUploadPermission,
 };

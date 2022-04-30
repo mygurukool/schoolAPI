@@ -27,6 +27,15 @@ const organizationSchema = mongoose.Schema({
     type: mongoose.SchemaTypes.ObjectId,
     required: true,
   },
+  uploadPermissionInfo: {
+    hasPermission: {
+      type: Boolean,
+      default: true,
+    },
+    acceptedBy: {
+      type: Object,
+    },
+  },
 });
 
 organizationSchema.plugin(toJSON);
