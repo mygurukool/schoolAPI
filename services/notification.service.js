@@ -7,6 +7,7 @@ const admin = require("firebase-admin");
 
 const serviceAccount = require("../firebase.json");
 const config = require("../config/config");
+const { ROLES } = require("../utils/permissions");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -76,16 +77,23 @@ const sendpermissionmail = async (data) => {
   try {
     // console.log("sendpermissionmail", data);
     const teachers = await User.find({
-      "groups.groupId": c._id,
+      "groups.groupId": data._id,
       "groups.role": ROLES.teacher,
     });
+    if (!teachers) {
+      return {
+        status: httpStatus.OK,
+        message: "Notification sent successfully",
+      };
+    }
+
     // const checkExist = await Token.find({ token: req.body.token });
     // // console.log('checkExist', checkExist);
     // if (checkExist.length > 0) {
     //   return { status: httpStatus.OK };
     // }
     // await Token.create({ ...req.body, userId: req.userId });
-    return { status: httpStatus.OK, message: "Token registered successfully" };
+    return { status: httpStatus.OK, message: "Notification sent successfully" };
   } catch (error) {
     console.log(error);
     return { status: httpStatus.INTERNAL_SERVER_ERROR, message: error };

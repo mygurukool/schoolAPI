@@ -14,6 +14,7 @@ const create = async (data) => {
     const hashPassword = await bcrypt.hash(data.password, salt);
 
     if (!user) {
+      console.log("org if");
       const newuser = await User.create({ ...data, password: hashPassword });
 
       if (newuser) {
@@ -49,6 +50,8 @@ const create = async (data) => {
         };
       }
     } else {
+      console.log("org else");
+
       const organization = await Organization.create({
         ...data,
         organizationEmail: data.email,
@@ -57,20 +60,30 @@ const create = async (data) => {
       });
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-      const updatedUser = await User.findByIdAndUpdate(user._id, {
-        $push: {
-          organizations: organization.id || organization._id,
+      const dataToUpdate = {
+        organizations: [
+          ...user.organizations,
+          organization.id || organization._id,
+        ],
 
-          loginTypes: { userId: user._id, platformName: platforms.MOUGLI },
-          tokens: {
+        loginTypes: [
+          ...user.loginTypes,
+          { userId: user._id, platformName: platforms.MOUGLI },
+        ],
+        tokens: [
+          ...user.tokens,
+          {
             token: token,
             platformName: platforms.MOUGLI,
           },
-        },
-      });
-      // console.log("updateUser", updatedUser);
+        ],
+      };
+      const updatedUser = await User.findByIdAndUpdate(user._id, dataToUpdate);
+
+      let createdGroup = null;
+      // console.log("updateduser", updatedUser, dataToUpdate);
       if (data.currentGroup) {
-        const createdGroup = await Group.create({
+        createdGroup = await Group.create({
           ...data.currentGroup,
           users: [updatedUser._id.toString()],
           userId: updatedUser._id,
@@ -83,6 +96,11 @@ const create = async (data) => {
           token: token,
           user: updatedUser,
           organization: organization,
+          createdGroup: {
+            ...createdGroup._doc,
+          },
+          tokens: updatedUser.loginTypes,
+          userId: updatedUser._id,
           message: "Organization created successfully",
         };
       }

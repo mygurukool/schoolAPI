@@ -119,18 +119,27 @@ const all = async (req) => {
 };
 
 const create = async (req) => {
-  console.log("req", req.body);
+  // console.log("req", req.body);
   try {
     const data = req.body;
     const checkIfExist = await Group.findOne(data);
+
     if (checkIfExist) {
       return {
         status: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Group name already exist",
       };
     }
+    const normalExist = await Group.find({
+      users: { $in: [JSON.stringify(req.userId)] },
+      groupName: data.groupName,
+    });
+    console.log("normalExist", normalExist);
+    if (normalExist) {
+      return { status: httpStatus.OK, message: "Group created successfully" };
+    }
     const checkOrg = await Organization.findOne({ userId: req.userId });
-    console.log("checkOrg", checkOrg);
+    // console.log("checkOrg", checkOrg);
     // let teachers = [];
     // if (checkOrg.organizationSize === "1") {
     //   const user = await User.findById(req.userId);

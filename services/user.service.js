@@ -43,7 +43,7 @@ const getTeachers = async ({
               "groups.role": ROLES.teacher,
             });
 
-            console.log("foundUsers", foundUsers);
+            // console.log("foundUsers", foundUsers);
 
             // const groupTeachers = await Promise.all(
             //   group.teachers.map(async (t) => {

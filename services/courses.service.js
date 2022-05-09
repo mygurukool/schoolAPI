@@ -23,8 +23,6 @@ const all = async (req) => {
             const foundCourses = await Course.find({
               groupId: req.query.groupId,
             });
-            console.log("foundCourses", foundCourses);
-
             if (foundCourses) {
               await Promise.all(
                 foundCourses.map(async (c) => {
@@ -44,6 +42,8 @@ const all = async (req) => {
               { url: courseApis.getCourses() },
               req
             );
+            // console.log("gcourses", gcourses.courses);
+
             if (gcourses) {
               const filterdCourses = groupName
                 ? gcourses.courses.filter((c) => c.section === groupName)
@@ -59,7 +59,6 @@ const all = async (req) => {
                 })
               );
             }
-            console.log("gcourses", req);
           } catch (error) {
             console.log("error", error);
           }
@@ -75,33 +74,13 @@ const all = async (req) => {
 };
 
 const create = async (req) => {
-  console.log("req", req.body);
+  // console.log("req", req.body);
 
   try {
     const data = req.body;
     await Promise.all(
       data.groupId.map(async (g) => {
-        if (g === null && data.currentGroup) {
-          const createdGroup = await Group.create({
-            ...data.currentGroup,
-            users: [req.userId],
-            userId: req.userId,
-            organizationId: data.organizationId,
-          });
-          const updatedUser = await User.findByIdAndUpdate(req.userId, {
-            $push: {
-              groups: [
-                {
-                  groupId: createdGroup._id,
-                  role: ROLES.teacher,
-                },
-              ],
-            },
-          });
-          await Course.create({ ...data, groupId: createdGroup._id });
-        } else {
-          await Course.create({ ...data, groupId: g });
-        }
+        await Course.create({ ...data, groupId: g });
       })
     );
     return { status: httpStatus.OK, message: "Course created successfully" };
