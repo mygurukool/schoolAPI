@@ -9,4 +9,3 @@ module.exports.UploadFile = require('./uploadfile.model');
 module.exports.StudentPoint = require('./studentpoint.model');
 module.exports.Events = require('./events.model');
 module.exports.Token = require('./token.model');
-module.exports.Contact = require('./contact.model');

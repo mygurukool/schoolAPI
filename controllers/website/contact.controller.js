@@ -1,5 +1,5 @@
-const catchAsync = require("../utils/catchAsync");
-const { contactService } = require("../services");
+const catchAsync = require("../../utils/catchAsync");
+const { contactService } = require("../../services/website");
 
 const submitDetails = catchAsync(async (req, res) => {
   const result = await contactService.submitDetails(req.body);

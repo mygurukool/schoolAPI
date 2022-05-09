@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const sgMail = require('@sendgrid/mail');
-const config = require('../config/config');
-const { Contact } = require('../models');
+const config = require('../../config/config');
+const { Contact } = require('../../models/website');
 
 
 const submitDetails = async () => {

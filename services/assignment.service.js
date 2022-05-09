@@ -9,7 +9,7 @@ const { courseApis } = require("../utils/gapis");
 const all = async (req) => {
   try {
     if (req.loginType === "mygurukool") {
-      const assignment = await Assignment.find({ ...req.query, status: true });
+      const assignment = await Assignment.find({ ...req.query, status: true }).sort({ dueDate: 1 });
 
       const newAssignment = await Promise.all(
         assignment.map(async (a) => {

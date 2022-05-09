@@ -7,6 +7,7 @@ const app = express();
 const cors = require("cors");
 const compression = require("compression");
 const UserRoutes = require("./routes");
+const WebRoutes = require("./routes/website");
 const path = require("path");
 const config = require("./config/config");
 const morgan = require("./config/morgan");
@@ -40,6 +41,7 @@ app.use(mongoSanitize());
 app.use(compression());
 
 app.use("/api", UserRoutes);
+app.use("/webapi", WebRoutes);
 
 app.locals.moment = require("moment");
 global.ObjectId = require("mongodb").ObjectID;

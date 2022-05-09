@@ -27,6 +27,12 @@ const organizationSchema = mongoose.Schema({
     type: mongoose.SchemaTypes.ObjectId,
     required: true,
   },
+  expiredAt: {
+    type: Date,
+    required: false
+  }
+}, {
+  timestamps: true,
 });
 
 organizationSchema.plugin(toJSON);

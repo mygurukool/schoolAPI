@@ -56,9 +56,8 @@ module.exports = {
         sendgrid_api_key: envVars.SENDGRID_API_KEY,
         from: envVars.EMAIL_FROM,
     },
-    razorpay: {
-        key_id: envVars.KEY_ID,
-        key_secret: envVars.KEY_SECRET
+    stripe: {
+        secret_key: envVars.STRIPE_SK
     }
     , sms: {
         username: envVars.SMS_USERNAME,

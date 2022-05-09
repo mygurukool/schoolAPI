@@ -20,6 +20,8 @@ const sendInvitation = async (data) => {
         // if (!config.email.sendgrid_api_key) {
         //     return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "No Api key found" });
         // }
+        const translate = require(`../locals/${data.language || 'en'}/translation.json`);
+
         const createInvitation = await Invitation.create(data)
         const filteredPeoples = await Promise.all(data.peoples.filter(async f => {
             const foundUser = await User.findOne({ email: f })
@@ -33,12 +35,11 @@ const sendInvitation = async (data) => {
         let mailDetails = {
             from: config.email.from,
             to: filteredPeoples,
-            subject: "Mygurukool Invitation",
+            subject: `${translate["APP_NAME"]} ${translate["INVITATION"]}`,
             html: `<!DOCTYPE html>
             <html>
-
             <head>
-                <title>Mygurukool Invitation</title>
+                <title>${translate["APP_NAME"]} ${translate["INVITATION"]}</title>
                 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -137,7 +138,7 @@ const sendInvitation = async (data) => {
                 </style>
             </head>
 
-            <body style="background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;">
+            <body style="background-color: #ff9e42; margin: 0 !important; padding: 0 !important;">
                 <!-- HIDDEN PREHEADER TEXT -->
                 <div
                     style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: 'Lato', Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
@@ -168,15 +169,22 @@ const sendInvitation = async (data) => {
                         </td>
                     </tr> -->
                     <tr>
-                        <td bgcolor="#f4f4f4" align="center" style="padding: 40px 10px 0px 10px;">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <td bgcolor="#ff9e42" align="center" style="padding: 40px 10px 0px 10px;">
+                    <table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="100%"
+                        style="max-width: 600px; border-radius: 20px;">
+                        <tr>
+                            <td bgcolor="#ffffff" align="center" valign="top"
+                                style="padding: 10px 10px 10px 10px; border-radius: 20px; ">
+                                <img src="https://mougli.school/images/logo.png" width="100" height="auto" />
+                            </td>
+                        </tr>
                                 <tr>
                                     <td bgcolor="#ffffff" align="left"
                                         style="padding: 40px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px;">
                                         <p style="margin: 0;">
-                                            Hello,
+                                            ${translate["HELLO"]},
                                             <br />
-                                            ${data.inviteeName} (${data.inviteeEmail}) invited you to the class ${data.groupName}.
+                                            ${data.inviteeName} (${data.inviteeEmail}) ${translate["INVITED_TO_CLASS"]} ${data.groupName}.
                                         </p>
                                     </td>
                                 </tr>
@@ -184,30 +192,26 @@ const sendInvitation = async (data) => {
                                     <td bgcolor="#ffffff" align="center"
                                         style="padding: 20px 30px 40px 30px; color: #454545; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 500; line-height: 25px;">
                                         <a href="${invitationLink}"
-                                            style="font-size: 20px; font-weight: 600;background-color: #5d3ea8; color: #fff;padding: 10px; cursor: pointer; border: none; margin: 2;text-align: center;">Accept
-                                            Invitation</a>
+                                            style="font-size: 20px; font-weight: 600;background-color: #5d3ea8; color: #fff;padding: 10px; cursor: pointer; border: none; margin: 2;text-align: center;">${translate["ACCEPT_INVITATION"]}</a>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td bgcolor="#ffffff" align="left"
                                         style="padding: 0px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px;">
-                                        <p style="margin: 0;">Forward to only those you trust. Anyone with this email may be able to
-                                            accept the invitation.
-                                        </p>
+                                        <p style="margin: 0;">${translate["INVITATION_MESSAGE_ONE"]}</p>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td bgcolor="#ffffff" align="left"
                                         style="padding: 0px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px;">
-                                        <p style="margin: 0;">If you accept, your contact information will be shared with the class
-                                            members and applications they authorize to use Classroom.
+                                        <p style="margin: 0;">${translate["INVITATION_MESSAGE_TWO"]}
                                         </p>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td bgcolor="#ffffff" align="left"
-                                        style="padding: 0px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px;">
-                                        <p style="margin: 0;">Thanks,<br>Mygurukool</p>
+                                        style="padding: 0px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px; border-radius: 0px 0px 20px 20px;">
+                                        <p style="margin: 0;">${translate["THANKS"]},<br>${translate["APP_NAME"]}</p>
                                     </td>
                                 </tr>
                             </table>
@@ -221,10 +225,10 @@ const sendInvitation = async (data) => {
         try {
             await sgMail.sendMultiple(mailDetails)
         } catch (error) {
+            console.log('sgmail err', error.response.body.errors);
             // return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: error.response.body.errors[0].message });
 
         }
-
         return ({ status: httpStatus.OK, data: invitationLink, message: "Invitation sent successfully" });
 
     } catch (error) {

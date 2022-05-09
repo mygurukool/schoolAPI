@@ -11,7 +11,6 @@ const user = require('./user.route');
 const util = require('./util.route')
 const events = require('./events.route')
 const notification = require('./notification.route')
-const contact = require('./contact.route')
 
 router.use('/auth', auth)
 router.use('/organization', organization)
@@ -24,6 +23,5 @@ router.use('/user', user)
 router.use('/', util)
 router.use('/events', events)
 router.use('/notification', notification)
-router.use('/contact', contact)
 
 module.exports = router;
