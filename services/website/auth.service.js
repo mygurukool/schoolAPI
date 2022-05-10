@@ -47,7 +47,7 @@ const register = async (data) => {
         const user = await User.create({ ...data, password: hashPassword });
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
         const price = data.package.prices.find(p => p.amount === data.price)
-        const expire = moment().add(price.duration, 'months').endOf("day").toDate()
+        const expire = price.duration > 0 ? moment().add(price.duration, 'months').endOf("day").toDate() : undefined
         const organization = await Organization.create({
             ...data,
             organizationEmail: data.email,
@@ -57,11 +57,10 @@ const register = async (data) => {
             expiredAt: expire
         });
         await User.findByIdAndUpdate(user._id, { organizationId: organization.id || organization._id })
-
         const transaction = await Transaction.create({
-            sessionId: data.transaction.id,
+            sessionId: data.transaction ? data.transaction.id : undefined,
             transactionDetails: data.transaction,
-            paymentId: data.transaction.payment_intent,
+            paymentId: data.transaction ? data.transaction.payment_intent : undefined,
             productType: data.package,
             priceType: price,
             organizationId: organization.id || organization._id,

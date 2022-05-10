@@ -12,7 +12,8 @@ const createSession = async (data) => {
                 message: "User already exist",
             };
         }
-        const YOUR_DOMAIN = 'http://localhost:3000/en/register';
+        const YOUR_DOMAIN = data.requestedUrl.indexOf('?') > -1 ? data.requestedUrl.substr(0, data.requestedUrl.indexOf('?')) : data.requestedUrl;
+        console.log('YOUR_DOMAIN', YOUR_DOMAIN, data.requestedUrl);
         const session = await stripe.checkout.sessions.create({
             line_items: [
                 {
@@ -29,7 +30,7 @@ const createSession = async (data) => {
             // customer_email: data.email,
             mode: 'payment',
             success_url: `${YOUR_DOMAIN}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${YOUR_DOMAIN}?canceled`,
+            cancel_url: `${YOUR_DOMAIN}?canceled=true`,
         });
         return ({ status: httpStatus.OK, session: session });
     } catch (error) {
