@@ -2,16 +2,12 @@ const mongoose = require('mongoose');
 const { toJSON, paginate } = require('../plugins');
 
 const pricingSchema = mongoose.Schema({
-    packageName: {
+    language: {
         type: String,
         required: false
     },
-    prices: {
+    pricing: {
         type: Array,
-        required: false
-    },
-    userSize: {
-        type: String,
         required: false
     },
 },

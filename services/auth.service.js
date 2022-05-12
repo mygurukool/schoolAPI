@@ -44,6 +44,7 @@ const login = async (req) => {
       return {
         status: httpStatus.OK,
         user: user,
+        organization: organization,
         loginType: "mygurukool",
         token: token,
         message: "Login Success",
