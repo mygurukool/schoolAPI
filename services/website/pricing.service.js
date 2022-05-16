@@ -5,7 +5,7 @@ const { Pricing } = require('../../models/website');
 const all = async (data) => {
     try {
         const pricing = await Pricing.findOne({ language: data.language })
-        return ({ status: httpStatus.OK, data: pricing ? pricing.pricing : [] });
+        return ({ status: httpStatus.OK, data: pricing ? pricing.pricing : undefined });
     } catch (error) {
         console.log(error);
         return ({ status: httpStatus.INTERNAL_SERVER_ERROR, message: "Failed to submit details" });

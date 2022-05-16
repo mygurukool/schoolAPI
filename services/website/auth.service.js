@@ -24,7 +24,7 @@ const login = async (data) => {
             organization: organization,
             transaction: transaction,
             token: token,
-            message: "Login Success",
+            message: "Logined In Successfully",
         };
     } catch (error) {
         console.log(error);
