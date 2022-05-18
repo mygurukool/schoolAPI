@@ -24,11 +24,15 @@ const transactionSchema = mongoose.Schema({
     },
     organizationId: {
         type: mongoose.SchemaTypes.ObjectId,
-        required: true,
+        required: false,
     },
     userId: {
         type: mongoose.SchemaTypes.ObjectId,
-        required: true,
+        required: false,
+    },
+    sponsorId: {
+        type: mongoose.SchemaTypes.ObjectId,
+        required: false,
     },
     expiredAt: {
         type: Date,
