@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const config = require('../../config/config');
 const { Sponsor, Transaction } = require('../../models/website');
+const { User } = require('../../models');
 const stripe = require('stripe')(config.stripe.secret_key);
 const sgMail = require('@sendgrid/mail');
 
