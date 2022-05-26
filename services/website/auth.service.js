@@ -85,6 +85,33 @@ const register = async (data) => {
 
 };
 
+const registerAdmin = async (data) => {
+    try {
+        const users = await User.findOne({ email: data.email });
+        if (users) {
+            return {
+                status: httpStatus.INTERNAL_SERVER_ERROR,
+                message: "User already exist",
+            };
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(data.password, salt);
+        const user = await User.create({ ...data, password: hashPassword });
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        return {
+            status: httpStatus.OK,
+            message: "Registration successfully completed",
+        };
+    } catch (error) {
+        console.log(error);
+        return {
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            message: "Failed to register",
+        };
+    }
+
+};
+
 const update = async (data) => {
     try {
         const user = await User.findByIdAndUpdate(data.userId, data, { new: true })
@@ -143,5 +170,6 @@ module.exports = {
     login,
     details,
     register,
+    registerAdmin,
     update
 };

@@ -20,11 +20,16 @@ const details = catchAsync(async (req, res) => {
     const result = await authService.details(req);
     return res.status(result.status).send(result)
 })
+const registerAdmin = catchAsync(async (req, res) => {
+    const result = await authService.registerAdmin(req.body);
+    return res.status(result.status).send(result)
+})
 
 
 module.exports = {
     login,
     details,
     register,
-    update
+    update,
+    registerAdmin
 };
